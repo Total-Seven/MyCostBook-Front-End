@@ -1,0 +1,38 @@
+:root {
+    /* --primary--color: #ff9854; */
+    --primary--color: rgba(66.17, 149.81, 143.75, 1);
+    --second--color: #c7bdbd;
+
+    --van-search-left-icon-color: var(--primary--color) !important;
+    --color-linear-gradient: linear-gradient(90deg, #fa8c1d, #fcaf3f);
+
+    --van-primary-color: var(--primary--color);
+    --van-background-2: #666;
+    --van-popup-close-icon-size: 30px
+}
+
+img {
+    width: 100%;
+}
+
+body {
+    font-size: 14px;
+    font-family: Inter;
+}
+
+.top-page {
+    position: relative;
+    z-index: 9;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: #fff;
+
+}
+
+.center-cpn {
+    padding: 0 15px
+}
+
+.bottom-gray-line {
+    border-bottom: 1px solid #f2f2f2;
+}
