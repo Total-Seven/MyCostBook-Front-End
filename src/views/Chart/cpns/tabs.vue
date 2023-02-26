@@ -1,21 +1,28 @@
 <script setup>
 import { ref } from 'vue';
-
-const current_index = ref(0)
-const shift = (index) => {
+// Store
+import useChartStore from '@/stores/modules/chart';
+import { storeToRefs } from 'pinia';
+const chartStore = useChartStore()
+const { tab } = storeToRefs(chartStore)
+// 
+const current_index = ref(3)
+const shift = (item, index) => {
     current_index.value = index
-    console.log('click', index, current_index.value);
+    tab.value = item
+    // console.log('这里是tabs:', tab.value);
+    // console.log('click', index, current_index.value);
 }
 </script>
 
 <template>
     <div class="tabs">
         <template v-for="(item, index) in ['Day', 'Week', 'Month', 'Year']" :key="index">
-            <div class="box" :class="{ 'shadow-drop-center': current_index == index }" @click="shift(index)">
+            <div class="box" :class="{ 'shadow-drop-center': current_index == index }" @click="shift(item, index)">
                 <span class="font">{{ item }}</span>
             </div>
         </template>
-</div>
+    </div>
 </template>
 
 <style lang="less" scoped>

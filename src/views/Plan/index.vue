@@ -1,10 +1,17 @@
 <script setup>
-import { ref, onMounted, reactive, watch } from 'vue';
+import { ref, onMounted, reactive, watch, toRaw } from 'vue';
+// Store
+import usePlanStore from '@/stores/modules/plan';
+
+// HighCharts
 import pies from '../Chart/cpns/pies.vue';
 import Highcahrts from 'highcharts'
 import planBanner from './cpns/banner.vue'
 import content from './cpns/content.vue';
 import dashBoard from './cpns/dashBoard.vue';
+import { storeToRefs } from 'pinia';
+import useTouch from '@/utils/touch';
+
 // Highcharts.chart('container', );
 // const chartOption = {
 //     title: {
@@ -102,7 +109,8 @@ import dashBoard from './cpns/dashBoard.vue';
 //     }]
 // }
 
-import useTouch from '@/utils/touch';
+
+//  
 const Ref_target = ref()
 const { moveX, moveY } = useTouch(Ref_target, false)
 
@@ -112,8 +120,8 @@ watch([moveX, moveY], ([newV1, newV2], [oldV1, oldV2]) => {
     console.log(Math.floor(newV1), Math.floor(newV2));
 })
 
-onMounted(() => {
 
+onMounted(() => {
 })
 
 </script>

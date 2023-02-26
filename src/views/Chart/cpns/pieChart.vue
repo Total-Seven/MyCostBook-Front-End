@@ -1,5 +1,20 @@
 <script setup>
+// vue
+import { ref, watch } from 'vue'
+// 图表
 import Highcahrts from 'highcharts'
+// Store
+import useChartStore from '@/stores/modules/chart';
+import { storeToRefs } from 'pinia';
+const chartStore = useChartStore()
+const { menu, tab } = storeToRefs(chartStore)
+// watch([menu, tab], ([menuNewV, tabNewV], [oldV1, oldV2]) => {
+//     console.log('这里是饼图：', menuNewV, tabNewV);
+// })
+
+// watch(tab, (newV, oldV) => {
+//     console.log('这里是饼图：', newV);
+// }, { deep: true })
 
 //
 const chartOption2 = {
@@ -153,7 +168,7 @@ const setcolor = () => {
 <template>
     <div class="pie">
         <highcharts :options="chartOption2" style="width:380px;height:350px"></highcharts>
-</div>
+    </div>
 </template>
 
 <style lang="less" scoped>

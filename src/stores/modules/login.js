@@ -5,6 +5,7 @@ import { defineStore } from 'pinia'
 
 import { loginOrRegister } from '@/service'
 
+
 const router = useRouter()
 
 
@@ -24,14 +25,15 @@ const useLoginStore = defineStore('login', {
             return new Promise(async (resolve, reject) => {
                 this.isShowanimation = true
                 const res = await loginOrRegister('login', this.submit_login)
-                if (res.code == 200) {
+                if (res) {
+                    console.log('成功返回');
                     resolve(res)
-                }
-                else if (res.code == 500) {
                     this.isShowanimation = false
-                    reject(res)
                 }
                 else {
+                    this.isShowanimation = false
+                    // 
+                    reject()
                     throw new Error('出错了')
                 }
                 // if (!res.data) {
