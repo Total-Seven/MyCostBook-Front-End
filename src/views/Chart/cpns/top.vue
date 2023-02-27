@@ -1,4 +1,25 @@
 <script setup>
+import { ref, computed } from 'vue'
+// Store
+import useChartStore from '@/stores/modules/chart';
+import { storeToRefs } from 'pinia';
+const chartStore = useChartStore()
+const { data, menu, current_tab, current_dateIndex } = storeToRefs(chartStore)
+// 
+const date_arr = computed(() => {
+    return data.value[menu.value][current_tab.value].time  // 后端返回可选择的日期（用户有账单记录的）
+})
+const current_key = computed(() => {
+    return date_arr.value[current_dateIndex.value]
+})
+
+const top_obj = computed(() => {
+    return data.value[menu.value][current_tab.value].top_obj
+})
+const top_array = computed(() => {
+    return top_obj.value[current_key.value]
+})
+// 
 const listData = [
     {
         icon: 'bangzhushouce.svg',
@@ -72,15 +93,16 @@ function getUrl(img) {
     <div class="top">
         <div id="title">Top</div>
         <div id="list">
-            <template v-for="(item, index) in listData" :key="index">
+            <template v-for="(item, index) in top_array" :key="index">
                 <div class="item">
                     <div class="left">
-                        <img class="pic" :src="getUrl(item.icon)" alt="">
+                        <!-- <img class="pic" :src="getUrl(item.icon)" alt=""> -->
+                        <img :src="item.avatar" alt="">
                     </div>
                     <div class="middle">
                         <div class="middleTop">
-                            <strong class="big">{{ item.name }}</strong>
-                            <span class="percentage">{{ item.percentage }}%</span>
+                            <strong class="big">{{ item.billLedger }}</strong>
+                            <span class="percentage">{{ item.percentage }}</span>
                         </div>
                         <div class="middleBottom">
                             <van-progress :percentage="item.percentage" :pivot-text="item.percentage" :show-pivot=false
@@ -90,8 +112,8 @@ function getUrl(img) {
                     </div>
                     <div class="right">
                         <div class="text">
-                            <div class="up">￥{{ item.price }}</div>
-                            <div class="down">{{ item.bill_nnumber }}</div>
+                            <div class="up">￥{{ item.amount }}</div>
+                            <div class="down">{{ item.number }}</div>
                         </div>
                         <div class="icon">
                             <van-icon name="arrow" size=18 color="#928f8f" />
@@ -100,7 +122,7 @@ function getUrl(img) {
                 </div>
             </template>
         </div>
-</div>
+    </div>
 </template>
 
 <style lang="less" scoped>

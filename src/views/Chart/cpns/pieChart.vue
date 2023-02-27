@@ -1,23 +1,35 @@
 <script setup>
 // vue
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 // 图表
 import Highcahrts from 'highcharts'
 // Store
 import useChartStore from '@/stores/modules/chart';
 import { storeToRefs } from 'pinia';
 const chartStore = useChartStore()
-const { menu, tab } = storeToRefs(chartStore)
+const { menu, tab, data, current_tab, current_dateIndex } = storeToRefs(chartStore)
 // watch([menu, tab], ([menuNewV, tabNewV], [oldV1, oldV2]) => {
 //     console.log('这里是饼图：', menuNewV, tabNewV);
 // })
+const date_arr = computed(() => {
+    return data.value[menu.value][current_tab.value].time  // 后端返回可选择的日期（用户有账单记录的）
+})
+const current_key = computed(() => {
+    return date_arr.value[current_dateIndex.value]
+})
 
+const pie_obj = computed(() => {
+    return data.value[menu.value][current_tab.value].pie_obj
+})
+const pie_array = computed(() => {
+    return pie_obj.value[current_key.value]
+})
 // watch(tab, (newV, oldV) => {
 //     console.log('这里是饼图：', newV);
 // }, { deep: true })
 
 //
-const chartOption2 = {
+const chartOption2 = computed(() => ({
     chart: {
         type: 'pie',
         options3d: {
@@ -81,17 +93,18 @@ const chartOption2 = {
     },
     series: [{
         name: '货物金额',
-        data: [
-            ['个人', 8],
-            ['家庭', 3],
-            ['学校', 1],
-            ['情侣', 6],
-            ['旅游', 8],
-            ['宝宝', 4],
-            ['生意', 4],
-            ['装修', 1],
-            ['婚姻', 1]
-        ],
+        // data: [
+        //     ['个人', 8],
+        //     ['家庭', 3],
+        //     ['学校', 1],
+        //     ['情侣', 6],
+        //     ['旅游', 8],
+        //     ['宝宝', 4],
+        //     ['生意', 4],
+        //     ['装修', 1],
+        //     ['婚姻', 1]
+        // ],
+        data: pie_array.value,
         hoverAnimation: true,
     }],
     events: {
@@ -133,7 +146,7 @@ const chartOption2 = {
             }
         }
     }
-}
+}))
 
 Highcahrts.getOptions().colors = Highcahrts.map(Highcahrts.getOptions().colors, function (color) {
     return {

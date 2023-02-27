@@ -1,10 +1,27 @@
 <script setup>
+// Vue
+import { ref, toRaw, computed } from 'vue'
+// 
 import Highcahrts from 'highcharts'
+// Store
+import useChartStore from '@/stores/modules/chart';
+import { storeToRefs } from 'pinia';
+const chartStore = useChartStore()
+const { data, menu, tab, current_tab } = storeToRefs(chartStore)
 
-const chartOptions = {
+console.log(toRaw(data.value[menu.value][current_tab.value]),);
+// 
+const line_array = computed(() => {
+    return data.value[menu.value][current_tab.value].line_array
+})
 
+const categories = computed(() => {
+    return data.value[menu.value][current_tab.value].time
+})
+
+
+const chartOptions = computed(() => ({
     credits: {
-
         enabled: false,                    // 默认值，如果想去掉版权信息，设置为false即可
         // text: 'www.hcharts.cn',             // 显示的文字
         // href: 'http://www.hcharts.cn',      // 链接地址
@@ -57,7 +74,22 @@ const chartOptions = {
         //       radius: 10 
         //   }
         // },
-        data: [['Jan', 500], ['Feb', 1100], ['Mar', 850], ['Apr', 1050], ['May', 950], ['Jun', 1800], ['Jul', 1400], ['Aug', 1000], ['Sep', 1300], ['Oct', 1000], ['Nov', 1100], ['Dec', 1800]], // sample data
+        // data: [
+        //     [
+        //         "2023-02",
+        //         765.42
+        //     ],
+        //     [
+        //         "2023-01",
+        //         1.11
+        //     ],
+        //     [
+        //         "2022-12",
+        //         13.12
+        //     ]
+        // ],
+        data: line_array.value,
+        // data: [['Jan', 500], ['Feb', 1100], ['Mar', 850], ['Apr', 1050], ['May', 950], ['Jun', 1800], ['Jul', 1400], ['Aug', 1000], ['Sep', 1300], ['Oct', 1000], ['Nov', 1100], ['Dec', 1800]], // sample data
         showInLegend: false // 设置为 false 即为不显示在图例中
 
     }],
@@ -81,7 +113,9 @@ const chartOptions = {
         tickColor: '#ffffff',
         gridLineWidth: 0,
         // visible: false,
-        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        // categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] //
+        // categories: ["2022-12", "2023-01", "This Month"]
+        categories: categories.value,
     },
     yAxis: {
         title: null,
@@ -119,13 +153,13 @@ const chartOptions = {
             return '$' + String(this.y).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         },
     },
-}
+}))
 </script>
 
 <template>
     <div class="chart">
         <highcharts :options="chartOptions" style="width:380px;height:200px"></highcharts>
-</div>
+    </div>
 </template>
 
 <style lang="less" scoped>

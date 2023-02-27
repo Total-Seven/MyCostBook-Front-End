@@ -7,44 +7,46 @@ import dayjs from 'dayjs'
 import useChartStore from '@/stores/modules/chart';
 import { storeToRefs } from 'pinia';
 const chartStore = useChartStore()
-const { data, menu, tab } = storeToRefs(chartStore)
+const { data, menu, current_tab, current_dateIndex } = storeToRefs(chartStore)
 /**
  * 根据Year、Month、Week、Day决定（tab）
  */
+console.log(dayjs().format('YYYY'));
 const date_arr = computed(() => {
-    return data.value[menu.value][tab.value].time  // 后端返回可选择的日期（用户有账单记录的）
+    return data.value[menu.value][current_tab.value].time  // 后端返回可选择的日期（用户有账单记录的）
 })
 // 理想索引
 const init_index = computed(() => {
     return date_arr.value.findIndex(el => {
-        return el == data.value[menu.value].nowTime[tab.value]    // nowTime对象里存着各tab的理想日期，在可选择的日期里一定能找到。
+        return el == data.value[menu.value].nowTime[current_tab.value]    // nowTime对象里存着各tab的理想日期，在可选择的日期里一定能找到。
     })
 })
 // 当前索引
-const current_index = ref(0)
+// current_dateKey
 /**
  * 监听 tab 和 menu 的变化，做边界判断
  */
 watch(date_arr, (newV, oldV) => {
-    console.log(0, current_index.value, date_arr.value.length);
-    // if (current_index.value > date_arr.value.length) {
-    current_index.value = init_index.value
+    console.log(0, current_dateIndex.value, date_arr.value.length);
+    // if (current_dateIndex.value > date_arr.value.length) {
+    // current_dateIndex.value = init_index.value
+    current_dateIndex.value = newV.length - 1
     // }
 })
 
 // 文字显示内容
 const now = computed(() => {
-    return date_arr.value[current_index.value]
+    return date_arr.value[current_dateIndex.value]
 })
 
 // 点击事件
 const decreaseShift = () => {
-    if (current_index.value == 0) return
-    current_index.value--
+    if (current_dateIndex.value == 0) return
+    current_dateIndex.value--
 }
 const IncreaseShift = () => {
-    if (current_index.value == date_arr.value.length - 1) return
-    current_index.value++
+    if (current_dateIndex.value == date_arr.value.length - 1) return
+    current_dateIndex.value++
 }
 </script>
 
