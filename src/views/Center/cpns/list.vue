@@ -9,8 +9,7 @@ function getUrl(img) {
 }
 
 const click = (path, index) => {
-    console.log(index);
-    if (index == (4 || 5)) return
+    if (index == (3 || 4)) return
     router.push(path)
 }
 </script>
@@ -23,7 +22,6 @@ const click = (path, index) => {
                 <span>{{ item.text }}</span>
             </div>
         </template>
-        <br><br><br><br>
     </div>
 </template>
 
@@ -31,34 +29,35 @@ const click = (path, index) => {
 @color: rgba(77, 136, 131, 0.1);
 
 .list {
-    width: 100%;
-    position: absolute;
     z-index: 1;
+    position: absolute;
     top: 406px;
+    width: 100%;
     padding: 30px;
     margin-bottom: 100px;
-    // background-color: #fff;
 
     .item {
         width: 82%;
         margin-bottom: 28px;
-        background-color: rgba(77, 136, 131, 0.1);
-        box-shadow: inset -1px 3px 8px 5px @color, 1px 2px 3px 0px #505653, 5px 5px 15px 5px rgba(0, 0, 0, 0);
         padding: 10px;
         border-radius: 10px;
+        background-color: rgba(77, 136, 131, 0.1);
+        box-shadow: inset -1px 3px 8px 5px @color, 1px 2px 3px 0px #505653, 5px 5px 15px 5px rgba(0, 0, 0, 0);
+
+
 
         img {
-            vertical-align: middle;
             width: 35px;
             height: 35px;
+            vertical-align: middle;
         }
 
         span {
+            margin-left: 25px;
             color: rgb(34, 34, 34);
             font-family: Inter;
             font-size: 20px;
             font-weight: 500;
-            margin-left: 25px;
             font-size: 16px;
             line-height: 20px;
         }

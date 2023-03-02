@@ -3,42 +3,89 @@
 import { ref } from 'vue';
 // Router
 import { useRouter } from 'vue-router';
+// Utils
+import { createURLObj } from '@/utils';
+import docCookies from '@/utils/docCookies';
+// Vant
+import 'vant/es/dialog/style'
+import 'vant/es/toast/style'
+import { showLoadingToast, closeToast } from 'vant';
 // Store
-
-// Setup
-/**
- * 
- */
+import useCenterStore from '@/stores/modules/center';
+import { storeToRefs } from 'pinia';
+const centerStore = useCenterStore()
+const { user_info, editUser_Infos } = storeToRefs(centerStore)
+// 路由
 const router = useRouter()
+
 /**
  * 变量
  */
-const showBottom = ref(false)
+const show = ref(false);        // 确认退出？
+const showBottom = ref(false)   // "修改用户信息" 以及 "退出登陆" 页面
+const Ref_name = ref()
+const inputname = ref()
 /**
  * 方法
  */
-const click = () => {
-    console.log('popUp');
-    showBottom.value = true
+const out = () => {      // 点击 退出登录 
+    show.value = true
 }
-const overlay = (event) => {
-    console.log('overlay');
-    event.stopPropagation();
-}
-const out = () => {
-    console.log('Out', sessionStorage.token);
+const confirm = () => {  // 确认 退出登录 
+    console.log('退出登陆');
     sessionStorage.removeItem('token')
     router.push('/login')
+}
+
+const submit = () => {
+    // 判断是否改变了名字、头像、默认账本
+    // 否则不发送
+    if (user_info.value.userInfo?.username == inputname.value) return
+    // 是则发送网络请求
+    else {
+
+        console.log('Send');
+        editUser_Infos.value = createURLObj({ new_username: inputname.value })
+        centerStore.Post_editUserInfos()
+        // 弹出提示 ：重新登陆
+        const toast = showLoadingToast({
+            duration: 0,
+            forbidClick: true,
+            message: '请重新登录...3',
+        });
+        let second = 3;
+        const timer = setInterval(() => {
+            second--;
+            if (second) {
+                toast.message = `请重新登录... ${second}`;
+            } else {
+                clearInterval(timer);
+                closeToast();
+            }
+        }, 1000);
+        // 
+        docCookies.removeItem('userName')
+        docCookies.removeItem('password')
+        setTimeout(() => {
+            router.push('/login')
+        }, 2800)
+    }
+}
+const closed = () => {
+    if (user_info.value.userInfo?.username != inputname.value) {
+        inputname.value = ''
+    }
 }
 </script>
 
 <template>
-    <div class="photo" @click="click" @touchStart.stop.prevent>
+    <div class="photo" @click="showBottom = true" @touchStart.stop.prevent>
         <img src="../../../assets/img/Profile_Center/Center_avatar.png" alt="">
-        <span class="name">Enjelin Morgeana</span>
-        <span class="sign">@Enjelin Morgeana</span>
-        <van-popup class="popUp" @click="overlay" @click-overlay="overlay" v-model:show="showBottom" position="bottom"
-            :style="{ height: '52%' }" round close-on-click-overlay=true>
+        <span class="name">{{ user_info?.userInfo?.username }}</span>
+        <span class="sign">@{{ user_info?.userInfo?.username }}</span>
+        <van-popup class="popUp" @closed="closed" @click="$event.stopPropagation();"
+            @click-overlay="$event.stopPropagation();" v-model:show="showBottom" position="bottom"
+            :style="{ height: '52%' }" round>
             <div class="inner">
                 <div class="topBanner">
                     <div class="left"><van-icon @click="showBottom = false" name="arrow-left" size="24" /></div>
@@ -54,16 +101,17 @@ const out = () => {
                 </div>
                 <div class="content">
                     <div class="box" id="one">
-                        <input type="text" placeholder=" Rabbit much Money">
-                        <div class="btn">Nickname</div>
+                        <input v-model="inputname" class="inputname" type="text" :placeholder="user_info.userInfo?.username"
+                            ref="Ref_name">
+                        <div class="btn"> Name</div>
                     </div>
                     <div class=" box" id="two">
-                        <input type="text" placeholder=" general">
+                        <input type="text" placeholder=" general" disabled>
                         <div class="btn">UserType</div>
                     </div>
                     <div class=" box" id="three">
-                        <input type="text" placeholder=" Unbound Wechat">
-                        <div class="btn">Login</div>
+                        <input type="text" placeholder=" Unbound Wechat" disabled>
+                        <div class="btn">Bound</div>
                     </div>
                 </div>
                 <div class="submit">
@@ -73,29 +121,44 @@ const out = () => {
                 </div>
             </div>
         </van-popup>
+        <van-dialog @confirm="confirm" v-model:show="show" title="Really？" show-cancel-button
+            confirm-button-color=" rgba(66.17, 149.81, 143.75, 1)">
+            <template #title>
+                <div>
+                    <span>Really？</span>
+                </div>
+            </template>
+        </van-dialog>
     </div>
 </template>
 
 <style lang="less" scoped>
-.photo {
-    width: 200px;
-    height: 200px;
-    position: absolute;
-    z-index: 3;
-
+.flex {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.photo {
+    z-index: 3;
+    position: absolute;
+    .flex();
     flex-direction: column;
     top: 306px;
     bottom: 0;
     left: 0;
     right: 0;
     margin: auto;
+    width: 200px;
+    height: 200px;
 
     img {
-        /* Group 21 */
-        // position: absolute;
         width: 140px;
         height: 140px;
         border-radius: 60px;
@@ -103,7 +166,6 @@ const out = () => {
     }
 
     .name {
-        /* Enjelin Morgeana */
         width: 188px;
         height: 24px;
 
@@ -117,16 +179,12 @@ const out = () => {
     }
 
     .sign {
-        /* @enjelin_morgeana */
-        // position: absolute;
-        width: 144px;
-        height: 17px;
-        line-height: 17px;
+        margin-top: 5px;
+        margin-right: 5px;
         color: rgb(67, 136, 131);
         font-family: Inter;
         font-size: 14px;
         font-weight: 600;
-        margin-top: 5px;
     }
 
     .popUp {
@@ -136,9 +194,7 @@ const out = () => {
             padding: 20px;
 
             .topBanner {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
+                .flex-between();
 
                 .middle {
                     position: relative;
@@ -151,16 +207,14 @@ const out = () => {
 
                 .right {
                     .text {
+                        .flex();
                         width: 50px;
                         height: 30px;
                         padding: 1px 5px;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        border-radius: 12px;
-                        background-color: #da3f3fDD;
                         color: #f3f3f3;
                         text-shadow: 0 0 1px #bfbfbf;
+                        border-radius: 12px;
+                        background-color: #da3f3fDD;
                     }
                 }
             }
@@ -169,45 +223,47 @@ const out = () => {
                 margin: 30px 0 20px 20px;
 
                 img {
-                    box-shadow: 0px 1px 15px #838383;
                     width: 80px;
                     height: 80px;
+                    box-shadow: 0px 1px 15px #838383;
                 }
             }
 
             .content {
 
                 .box {
+                    .flex-between();
                     box-sizing: border-box;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
                     padding: 0 15px;
                     margin-top: 15px;
 
                     input[type="text"] {
-                        // color: #fff;
-                        background-color: #bfbfbfAA;
                         width: 70%;
                         height: 35px;
+                        text-align: center;
+                        background-color: #bfbfbfAA;
+                        outline: none;
                         border: 0;
                         border-radius: 16px;
-                        outline: none;
+
                     }
 
                     input::-webkit-input-placeholder {
                         // input::-moz-placeholder、input:-moz-placeholder 、 input:-ms-input-placeholder
-                        color: #111111;
                         position: relative;
-                        left: 10px;
+                        color: #111111;
+                        // left: 10px;
                     }
 
+                    .inputname:focus::placeholder {
+                        opacity: 0;
+                    }
+
+
                     .btn {
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        margin-left: 5px;
+                        .flex();
                         flex: 1;
+                        margin-left: 5px;
                         height: 35px;
                         border-radius: 16px;
                         background-color: #bfbfbfAA;
@@ -216,20 +272,18 @@ const out = () => {
             }
 
             .submit {
-                margin-top: 20px;
                 display: flex;
                 justify-content: flex-end;
                 position: relative;
                 left: -12px;
+                margin-top: 20px;
 
                 .btn {
                     width: 100px;
                     height: 50px;
                     border-radius: 24px;
                     background-color: #429690;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
+                    .flex();
                 }
             }
         }

@@ -1,8 +1,6 @@
 import { toRaw } from "vue";
-
 import { defineStore } from "pinia";
-
-import { getUserInfos, addCategory, deleteCategory, gerAllAcount, addBook, delBook, updateBook } from "@/service";
+import { getUserInfos, addCategory, deleteCategory, gerAllAcount, addBook, delBook, updateBook, editUserInfos, addAcount, delAccount } from "@/service";
 
 const useCenterStore = defineStore('center', {
     state: () => ({
@@ -16,24 +14,45 @@ const useCenterStore = defineStore('center', {
         current_option: 'Expend',
         // 
         user_info: {},
+        editUser_Infos: {},
 
         add_category_info: {},
         delete_category_info: {},
         //
         // Account
         account_data: {},
+        add_account_info: {},
+        del_account_info: {},
         // Book
         add_book_info: {},
         del_book_info: {},
         update_book_info: {},
-
     }),
     actions: {
         async getUserInfos() {
-            console.log('Send : getUserInfos',);
+            console.group('Profile,发送网络请求');
+            console.time('Profile')
+            console.log('...loading',);
             const result = await getUserInfos()
             if (result) {
+                console.log('!!!,请求成功🔥');
                 this.user_info = result.data
+                console.log(toRaw(this.user_info))
+                console.timeEnd('Profile')
+                console.groupEnd('Profile,发送网络请求');
+            }
+        },
+        async Post_editUserInfos() {
+            console.group('editUserInfos,发送网络请求');
+            console.time('editUserInfos')
+            console.log('...loading',);
+            const result = await editUserInfos(this.editUser_Infos)
+            if (result) {
+                console.log('!!!,请求成功🔥');
+                console.log(this.user_info.userInfo.username, toRaw(result.data.new_username));
+                this.user_info.userInfo.username = result.data.new_username
+                console.timeEnd('editUserInfos')
+                console.groupEnd('editUserInfos,发送网络请求');
             }
         },
         async Post_addCategory(first_id, type_name) {
@@ -104,28 +123,88 @@ const useCenterStore = defineStore('center', {
                 console.log('失败');
             }
         },
+        async post_addAccount() {
+            console.group('post_addAccount,网络请求')
+            console.log('正在加载...');
+            console.time('post_addAccount')
+            return new Promise(async (resolve, reject) => {
+                const res = await addAcount(this.add_account_info)
+                if (res.code == 200) {
+                    console.log('成功🔥', res.data);
+                    resolve(res.data.insertId)
+                    console.timeEnd('post_addAccount')
+                    console.groupEnd('post_addAccount,网络请求')
+                }
+                else {
+                    console.log('失败', res);
+                    reject()
+                }
+            })
+
+        },
+        async post_delAccount() {
+            console.group('post_delAccount,网络请求')
+            console.log('正在加载...');
+            console.time('post_delAccount')
+            return new Promise(async (resolve, reject) => {
+                const res = await delAccount(this.del_account_info)
+                if (res.code == 200) {
+                    console.log('成功🔥', res.data);
+                    resolve(res.data)
+                    console.timeEnd('post_delAccount')
+                    console.groupEnd('post_delAccount,网络请求')
+                }
+                else {
+                    console.log('失败', res);
+                    reject()
+                }
+            })
+
+        },
         async post_addBook() {
-            const res = await addBook(this.add_book_info)
-            if (res.code == 200) {
-                console.log(res.data);
-            }
-            elseP
-            console.log('失败', res);
+            console.group('post_addBook,网络请求')
+            console.log('正在加载...');
+            console.time('post_addBook')
+            return new Promise(async (resolve, reject) => {
+                const res = await addBook(this.add_book_info)
+                if (res.code == 200) {
+                    console.log('成功🔥', res.data);
+                    resolve(res.data.insertId)
+                    console.timeEnd('post_addBook')
+                    console.groupEnd('post_addBook,网络请求')
+                }
+                else {
+                    console.log('失败', res);
+                    reject()
+                }
+            })
+
         },
         async post_delBook() {
-            const res = await delBook(this.del_book_info)
-            if (res.code == 200) {
-                console.log(res.data);
-            }
-            elseP
-            console.log('失败', res);
+            return new Promise(async (resolve, reject) => {
+                const res = await delBook(this.del_book_info)
+                if (res.code == 200) {
+                    console.log(res.data);
+                    resolve()
+                }
+                else {
+                    console.log('失败', res);
+                    reject()
+                }
+            })
+
         },
         async post_updateBook() {
+            console.group('post_updateBook,网络请求')
+            console.log('正在加载...');
+            console.time('post_updateBook')
             return new Promise(async (resolve, reject) => {
                 const res = await updateBook(this.update_book_info)
                 if (res.code == 200) {
                     console.log('更新成功', res.data);
+                    console.timeEnd('post_updateBook')
                     resolve(res.data)
+                    console.groupEnd('post_updateBook,网络请求')
                 }
                 else console.log('失败', res);
             })

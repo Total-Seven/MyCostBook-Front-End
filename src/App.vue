@@ -4,7 +4,6 @@ import { useRoute, useRouter } from 'vue-router';
 import login from '@/components/welcome.vue'
 import tabbar from './components/tabbar.vue';
 const route = useRoute();
-
 </script>
 
 <template>

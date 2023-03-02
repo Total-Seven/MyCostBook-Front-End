@@ -1,34 +1,83 @@
 <script setup>
+// Vue
 import { ref, toRaw } from 'vue';
+// 路由
 import { useRouter } from 'vue-router';
+// Util
+import { createURLObj } from '@/utils';
 // Store
 import useCenterStore from '@/stores/modules/center';
 import { storeToRefs } from 'pinia';
 const centerStore = useCenterStore()
-const { account_data } = storeToRefs(centerStore)
+const { user_info, account_data, add_account_info, del_account_info } = storeToRefs(centerStore)
+// Router
 const router = useRouter()
+// Props -- 由Index传入 （通过RouterView） 
 const props = defineProps({
     test: {
         type: Object,
         default: () => { }
     }
 })
-console.log(toRaw(props.test));
-centerStore.Get_allAccount()
-console.log(account_data.value);
-
+// centerStore.Get_allAccount()
+function account_detail(item, index) {
+    console.log(toRaw(item, index))
+}
+// PopUp
 const showPopUpBottom = ref(false)
 const clickPopUp = () => {
     showPopUpBottom.value = true
 }
+const subMit_name = ref()
+function submit() {
+    add_account_info.value = createURLObj({ name: subMit_name.value, pay_type: 0, amount: 666 })
+    centerStore.post_addAccount().then(res => {
+        user_info.value.account.push({ id: res, name: subMit_name.value, pay_type: 0, user_id: user_info.value.userInfo.id, amount: 666 })
+    })
+    showPopUpBottom.value = false
+}
+// Del
+const beforeClose = ({ name, position }) => {
+    console.log(name, position);
+    switch (position) {
+        case 'left':
+        case 'cell':
+        case 'outside':
+            return true;
+        case 'right':
+        // return new Promise((resolve) => {
+        //     showConfirmDialog({
+        //         title: '确定删除吗？',
+        //     }).then(resolve);
+        // });
+    }
+}
+function del(item, index) {
+    console.log('del', index, item);
+    del_account_info.value = createURLObj({ id: item.id })
+    centerStore.post_delAccount().then(res => {
+        console.log('Del_account:', res);
+        const targetIndex = user_info.value.account.findIndex(el => {
+            return el == item
+        })
+        user_info.value.account.splice(targetIndex, 1)
+    })
+}
+// Edit
+const Ref_SwipeCell = ref()
+const isAllSwipe = ref(false)
+function edit() {
+    Ref_SwipeCell.value.open()
+    isAllSwipe.value = true
+} 
 </script>
 
 <template>
     <div class="accountMananger">
         <div class="banner">
-            <div class="left" @click="router.back()"><van-icon @click="router.back()" name="arrow-left" size="16px" /></div>
+            <div class="left" @click="router.back()"><van-icon name="arrow-left" size="16px" /></div>
             <div class="middle">Asset Management</div>
-            <div class="right" @click="clickPopUp"><van-icon @click="edit" name="edit" size="20" /></div>
+            <div class="right" @click="edit"><van-icon name="edit" size="20" /></div>
         </div>
         <div class="top">
             <div class="box toop">
@@ -64,49 +113,46 @@ const clickPopUp = () => {
             </div>
             <div class="list">
                 <template v-for="(item, index) in test">
-                    <div class="item">
-                        <div class="left">
-                            <div><img src="picture/2023/02/10/cZkBewG65J3SjHr.png" alt=""></div>
+                    <van-swipe-cell :before-close="beforeClose" name="删除" ref="Ref_SwipeCell" :stop-propagation="true">
+                        <div class="item" @click="account_detail(item, index)">
+                            <div class="left">
+                                <div><img src="picture/2023/02/10/cZkBewG65J3SjHr.png" alt=""></div>
+                            </div>
+                            <div class="middle">
+                                <div>{{ item.name }}</div>
+                            </div>
+                            <div class="right">
+                                <div class="amount"><span>-￥{{ item.amount }}</span></div>
+                            </div>
                         </div>
-                        <div class="middle">
-                            <div>{{ item.name }}</div>
-                        </div>
-                        <div class="right">
-                            <div class="amount"><span>-￥{{ item.amount }}</span></div>
-                        </div>
-                    </div>
+                        <template #right class="swipe-button-inner">
+                            <van-button class="swipe-button" round type="danger" text="删除" @click="del(item, index)" />
+                            <van-button class="swipe-button" round color="#429690" type="primary" text="修改" />
+                        </template>
+                    </van-swipe-cell>
                 </template>
             </div>
-            <div class="footer">
+            <div class="footer" @click="clickPopUp">
                 <span>Add your Asset</span>
             </div>
+
         </div>
-        <van-popup class="popup" v-model:show="showPopUpBottom" position="bottom" :style="{ height: '40%' }" round
-            closeable>
+        <van-popup class="popup" v-model:show="showPopUpBottom" position="bottom" :style="{ height: '30%' }" round>
             <div class="inner">
                 <div class="banner">
                     <div class="left"><van-icon name="arrow-left" size="22" /></div>
                     <div class="middle">
-                        <h2>Create Asset</h2>
+                        <h2>Create Account</h2>
                     </div>
                 </div>
                 <div class="conten">
                     <div class="box icon">
                         <img src="picture/2023/02/10/cZkBewG65J3SjHr.png" alt="">
                         <div class="iright">
-                            <div class="line type">
-                                <span style="font-size: 12px;">类型:</span>
-                                <span class="color">{{ type_name }}</span>
-                            </div>
-                            <div class="line category">
-                                <span style="font-size: 12px;">名称:</span>
-                                <span class="color">{{ first_type_name }}</span>
+                            <div class="name type">
+                                <input type="text" v-model="subMit_name" placeholder="&ensp; Please enter a category name">
                             </div>
                         </div>
-                    </div>
-                    <div class=" box name">
-                        <input :class="{ inputShark: isInputShark }" type="text" v-model="subMit_name"
-                            placeholder="&ensp; Please enter a category name">
                     </div>
                     <div class=" box submit">
                         <div class="btn" @click="submit">
@@ -119,7 +165,17 @@ const clickPopUp = () => {
     </div>
 </template>
 
-<style lang="less" scoped>
+<style lang="less">
+.flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+// :root {
+
+// }
+
 .accountMananger {
     box-sizing: border-box;
     padding: 30px 20px 10px;
@@ -267,6 +323,8 @@ const clickPopUp = () => {
             margin-top: 10px;
             padding: 10px;
 
+            --van-button-default-height: 100%;
+
             .item {
                 color: #111111;
                 text-shadow: 0 0 2px #6d6d6dAA;
@@ -281,6 +339,16 @@ const clickPopUp = () => {
                 margin-bottom: 15px;
                 box-sizing: border-box;
                 padding: 10px;
+
+                .swipe-button-inner {
+                    .flex();
+
+                    .swipe-button {
+                        .flex();
+                        height: 100%;
+                    }
+                }
+
 
                 .left {
                     width: 15%;
@@ -344,8 +412,7 @@ const clickPopUp = () => {
 
             .banner {
                 display: grid;
-
-                grid-template-columns: 1fr 2fr 1fr;
+                grid-template-columns: 1fr 2.3fr 1fr;
 
                 .left {
                     display: flex;
@@ -355,59 +422,15 @@ const clickPopUp = () => {
                 .middle {
                     display: flex;
                     justify-content: center;
+
                 }
             }
 
             .conten {
-                padding: 10px 10px 0 10px;
-
-                .box {
-                    margin-top: 25px;
-                }
+                padding: 20px 10px 0 10px;
 
                 .icon {
                     display: flex;
-
-                    .iright {
-                        flex: 1;
-                        margin-left: 20px;
-                        display: grid;
-                        grid-template-rows: repeat(2, 1fr);
-                        grid-row-gap: 10px;
-                        // display: flex;
-                        // flex-direction: column;
-                        // // align-items: center;
-                        // justify-content: center;
-                        // align-items: center;
-
-                        .line {
-                            position: relative;
-                            width: 250px;
-                            background-color: #bfbfbfAA;
-                            border-radius: 24px;
-                            display: flex;
-                            justify-content: flex-start;
-                            align-items: center;
-
-                            // margin-top   : 10px;
-                            .color {
-                                margin-left: 10px;
-                                color: #1b1b1b;
-                                font-weight: 550;
-                                font-size: 16px;
-                            }
-                        }
-
-                        span {
-                            position: relative;
-                            left: 15px;
-                            color: #6d6d6d // display: block;
-                                // background-color: pink;
-                                // width: 200px;
-                                // margin-top: 8px;
-                                // padding-top: 20px;
-                        }
-                    }
 
                     img {
                         background-color: #bfbfbfAA;
@@ -415,22 +438,24 @@ const clickPopUp = () => {
                         width: 100px;
                         width: 100px;
                     }
-                }
 
-                .name {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
+                    .iright {
+                        .flex();
+                        // flex: 1;
+                        margin-left: 20px;
 
-                    input {
-                        width: 95%;
-                        height: 50px;
-                        border-radius: 24px;
-                        background-color: #bfbfbfDD;
-                        border: 0;
-                        outline: none;
+                        input {
+                            width: 60vw;
+                            height: 50px;
+                            border-radius: 24px;
+                            background-color: #bfbfbfDD;
+                            border: 0;
+                            outline: none;
+                        }
                     }
                 }
+
+
 
                 .submit {
                     display: flex;

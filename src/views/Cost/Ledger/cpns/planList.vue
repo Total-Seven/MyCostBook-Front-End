@@ -90,7 +90,7 @@ function getUrl(img) {
                                 <van-progress :percentage="item.progress"
                                     color="linear-gradient(to right,#42958F,#7AC5CD)" />
                                 <!-- <van-progress :percentage="item.progress"
-                                    color="linear-gradient(to right, #be99ff, #7232dd)" /> -->
+                                                                                                        color="linear-gradient(to right, #be99ff, #7232dd)" /> -->
                             </div>
                             <!-- <div div class=" rate">{{ item.progress }}</div> -->
                         </div>
@@ -109,6 +109,7 @@ function getUrl(img) {
     top: 350px;
     color: black;
     padding: 22px;
+    margin-bottom: 80px;
 
     .title {
         font-size: 18px;
@@ -128,6 +129,7 @@ function getUrl(img) {
     .list {
         display: flex;
         flex-direction: column;
+        margin-bottom: 60px;
 
         .item {
             display: flex;

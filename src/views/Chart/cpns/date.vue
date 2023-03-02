@@ -1,42 +1,30 @@
 <script setup>
 // Vue
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, toRaw } from 'vue';
 // Dayjs
 import dayjs from 'dayjs'
 // Store
 import useChartStore from '@/stores/modules/chart';
 import { storeToRefs } from 'pinia';
 const chartStore = useChartStore()
-const { data, menu, current_tab, current_dateIndex } = storeToRefs(chartStore)
+const { data, current_menu, current_tab, current_dateIndex } = storeToRefs(chartStore)
 /**
  * 根据Year、Month、Week、Day决定（tab）
  */
-console.log(dayjs().format('YYYY'));
+console.log('date', toRaw(data.value[current_menu.value]));
 const date_arr = computed(() => {
-    return data.value[menu.value][current_tab.value].time  // 后端返回可选择的日期（用户有账单记录的）
+    return data.value[current_menu.value][current_tab.value].time  // 后端返回可选择的日期（用户有账单记录的）
 })
-// 理想索引
-const init_index = computed(() => {
-    return date_arr.value.findIndex(el => {
-        return el == data.value[menu.value].nowTime[current_tab.value]    // nowTime对象里存着各tab的理想日期，在可选择的日期里一定能找到。
-    })
-})
-// 当前索引
-// current_dateKey
 /**
  * 监听 tab 和 menu 的变化，做边界判断
  */
 watch(date_arr, (newV, oldV) => {
-    console.log(0, current_dateIndex.value, date_arr.value.length);
-    // if (current_dateIndex.value > date_arr.value.length) {
-    // current_dateIndex.value = init_index.value
     current_dateIndex.value = newV.length - 1
     // }
 })
-
 // 文字显示内容
 const now = computed(() => {
-    return date_arr.value[current_dateIndex.value]
+    return date_arr.value[current_dateIndex.value] || 'this Month'
 })
 
 // 点击事件

@@ -8,8 +8,14 @@ import bannerVue from '@/components/banner.vue';
         <bannerVue>
             <template #left>
                 <div class='text'>
-                    <img src="@/assets/img/home/sharpicons_Rabbit.svg" alt="">
-                    <span>Little-Rabbit</span>
+                    <!-- <img src="@/assets/img/home/sharpicons_Rabbit.svg" alt=""> -->
+                    <span>&ensp;</span>
+                </div>
+            </template>
+            <template #right>
+                <div class='text'>
+                    <!-- <img src="@/assets/img/home/sharpicons_Rabbit.svg" alt=""> -->
+                    <div>Little-Rabbit </div>
                 </div>
             </template>
         </bannerVue>
@@ -25,16 +31,16 @@ import bannerVue from '@/components/banner.vue';
         font-size: 16px;
         line-height: 32px;
         width: 135px;
+        margin-right: 50px;
 
-        img {
+
+        div {
             position: relative;
-            display: block;
-            width: 30px;
-            height: 30px;
-        }
-
-        span {
-            margin-left: 10px;
+            right: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 135px;
         }
     }
 

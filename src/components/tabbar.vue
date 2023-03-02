@@ -1,45 +1,39 @@
 <script setup>
 import { ref } from 'vue'
+// Router
+import { useRouter } from 'vue-router'
+// Store
 import useCostStore from '@/stores/modules/cost';
 import useTabBarStore from '@/stores/modules/Tabbar';
-import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia';
-const router = useRouter()
-
+// Store
 const costStore = useCostStore()
 const tabBarStore = useTabBarStore()
 const { tabBar, isShowBigButton, isShowBoundaries, current_index } = storeToRefs(tabBarStore)
 const { show } = storeToRefs(costStore)
-console.log('tabbar', isShowBigButton.value);
-
+// Router
+const router = useRouter()
+// Ref
 const Ref_tabBar = ref()
-// isShowBigButton===true?Ref_tabBar.style.
-// console.log(data);
+
+
 /**
 * var
 */
+
+
 /**
 * function
 */
-defineProps({})
-defineEmits({})
-defineExpose({})
-
 function changePath(playload, index) {
     router.push({
         path: playload,
-        // query: {
-        //     name: 77,
-        //     age: 7
-        // }
     })
     current_index.value = index
 }
 function getUrl(img) {
     return new URL(`../assets/img/tabbar/${img}`, import.meta.url).href
 }
-
-
 // 添加账单bill
 const showPopup = () => {
     console.log('showPopup');
@@ -55,18 +49,15 @@ const showPopup = () => {
                 <span>+</span>
             </div>
         </div>
-        <!-- <div class="fix" v-else></div> -->
-        <!-- <img src="../assets/img/tabbar/home.png" alt=""> -->
         <template v-for="(item, index) in tabBar" :key="index">
             <div class="tab-bar-item" :style="item.style">
                 <img v-if="current_index == index" :src="getUrl(item.activeimg)" alt=""
                     @click="changePath(item.JumpPath, index)">
                 <img v-else :src="getUrl(item.img)" alt="" @click="changePath(item.JumpPath, index)">
-                <!-- <p class="text">{{ item.text }}</p> -->
             </div>
         </template>
 
-</div>
+    </div>
 </template>
 
 <style lang="less" scoped>

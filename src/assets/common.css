@@ -1,7 +1,10 @@
 :root {
-    /* --primary--color: #ff9854; */
+    /* 颜色 */
     --primary--color: rgba(66.17, 149.81, 143.75, 1);
     --second--color: #c7bdbd;
+    --third--color: rgba(42.47, 124.31, 118.38, 1);
+    --fourth--color: rgb(67, 136, 131);
+    /* 颜色 End */
 
     --van-search-left-icon-color: var(--primary--color) !important;
     --color-linear-gradient: linear-gradient(90deg, #fa8c1d, #fcaf3f);

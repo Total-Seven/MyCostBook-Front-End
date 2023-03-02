@@ -23,18 +23,19 @@ import banner from '@/components/banner.vue';
 <style lang="less" scoped>
 .center_banner {
     .inner {
-        padding: 8px;
-        border-radius: 20px;
-        background-color: rgba(215, 215, 215, 0.2);
         display: flex;
         justify-content: center;
         align-items: center;
+        padding: 8px;
+        border-radius: 20px;
+        background-color: rgba(215, 215, 215, 0.2);
+
     }
 
     img.calendar {
+        position: relative;
         width: 20px;
         height: 20px;
-        position: relative;
     }
 }
 </style>

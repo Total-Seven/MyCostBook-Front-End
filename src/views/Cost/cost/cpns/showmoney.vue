@@ -1,4 +1,18 @@
 <script setup>
+const props = defineProps({
+    net: {
+        type: Number,
+        default: 0,
+    },
+    expense: {
+        type: Number,
+        default: 0,
+    },
+    income: {
+        type: Number,
+        default: 0,
+    },
+})
 </script>
 
 <template>
@@ -12,24 +26,22 @@
                     </div>
                     <div class="topRight"><van-icon name="ellipsis" size="20" /></div>
                 </div>
-                <div class="totalBalance">$2,548.00</div>
+                <div class="totalBalance">${{ net }}</div>
             </div>
-
             <div class="foot">
                 <div class="item footleft">
                     <div class="itemtop">
                         <div class="icon"><span>↓</span></div>
                         <span class="type">Income</span>
                     </div>
-                    <div class="itembottom">$1,840.00</div>
-
+                    <div class="itembottom">${{ income }}</div>
                 </div>
                 <div class="item footright">
                     <div class="itemtop">
                         <div class="icon"><span>↑</span></div>
                         <span class="type">Expenses</span>
                     </div>
-                    <div class="itembottom" id="last">$284.00</div>
+                    <div class="itembottom" id="last">${{ expense }}</div>
                 </div>
             </div>
         </div>
@@ -39,6 +51,7 @@
 <style lang="less" scoped>
 .showMoney {
     position: absolute;
+    z-index: 999;
     width: 374px;
     height: 202px;
     // background-color: #ffffffaa;

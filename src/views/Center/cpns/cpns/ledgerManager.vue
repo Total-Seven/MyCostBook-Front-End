@@ -1,16 +1,21 @@
 <script setup>
-import { ref, computed } from 'vue';
+// Vue
+import { ref, computed, toRaw } from 'vue';
+// Router
 import { useRouter } from 'vue-router';
 // Utils
 import { createURLObj } from '@/utils';
+// 组件
+import myDialog from '@/components/dialog.vue'
+// 
 // Store
 import useCenterStore from '@/stores/modules/center';
 import { storeToRefs } from 'pinia';
 const centerStore = useCenterStore()
-const { add_book_info,
+const { user_info,
+    add_book_info,
     del_book_info,
     update_book_info, } = storeToRefs(centerStore)
-
 // 
 const router = useRouter()
 
@@ -27,34 +32,90 @@ const props = defineProps({
 const data = computed(() => {
     return props.test
 })
-
 /**
  * 点击编辑，修改状态，实现动画
  **/
 const isimgshark = ref(false)
 const isClickEdit = () => {
-    console.log('edit');
     isimgshark.value == true ? isimgshark.value = false : isimgshark.value = true
 }
 /**
  * 点击提交表单
- * @param {*} id 
- * @param {*} name 
  */
+const default_placeholder = ref('')
 const update = (id, name) => {
+    default_placeholder.value = name
     // 屏蔽编辑状态以外的点击
     if (isimgshark.value == false) return
-    update_book_info.value = createURLObj({ id: id, name: '王八蛋账本' })
-    // Promise回调
-    centerStore.post_updateBook().then(res => {
-        const targetIndex = data.value.findIndex(el => {
-            return el.id == id    // 一定要return 
+    // 
+    subMit_id.value = id
+    showDialog.value = true
+}
+function delBook(id, name, $event) {
+    $event.stopPropagation()
+    const answer = window.confirm('Do you really want to Delete? Unable to recover!')
+    if (!answer) return false
+    console.log(id, name);
+    del_book_info.value = createURLObj({ id: id })
+    centerStore.post_delBook().then(res => {
+        const targetIndex = user_info.value.books.findIndex(item => {
+            return item.id == id
         })
-        data.value[targetIndex].name = '王八蛋账本'
+        user_info.value.books.splice(targetIndex, 1)
+        isimgshark.value == true ? isimgshark.value = false : isimgshark.value = true
     })
 }
-const addBook = () => {
-    console.log('add');
+// PopUp
+const showPopUpBottom = ref()
+const subMit_name = ref()
+const subMit_id = ref()
+function submit() {
+    add_book_info.value = createURLObj({ name: subMit_name.value, book_type: 0 })
+    centerStore.post_addBook().then(res => {
+        user_info.value.books.push({ id: res, name: subMit_name.value, book_type: 0 })
+    })
+    showPopUpBottom.value = false
+}
+// Dialog
+const diaLog_title = ref('Edit Ledger')
+const showDialog = ref(false)
+function Close(action) {
+    if (action == 'cancel') {
+        showDialog.value = false
+        return
+    }
+    if (action == 'confirm' && !subMit_name.value) {
+        diaLog_title.value = '名称不可为空'
+        setTimeout(() => {
+            diaLog_title.value = 'Edit Ledger'
+        }, 1500)
+        return
+    }
+    if (action == 'confirm' && !(subMit_name.value.length < 7)) {
+        console.log(subMit_name.value.length);
+        diaLog_title.value = '需少于6个字符'
+        setTimeout(() => {
+            diaLog_title.value = 'Edit Ledger'
+        }, 1500)
+        return
+    }
+    else if (action == 'confirm') {
+        update_book_info.value = createURLObj({ id: subMit_id.value, name: subMit_name.value })
+        //
+        centerStore.post_updateBook()
+            .then(res => {
+                // 
+                const targetIndex = user_info.value.books.findIndex(item => {
+                    return item.id == subMit_id.value
+                })
+                user_info.value.books[targetIndex].name = subMit_name.value
+                showDialog.value = false
+                isimgshark.value == true ? isimgshark.value = false : isimgshark.value = true
+            })
+    }
+}
+function watch_input(newV) {
+    subMit_name.value = newV
 }
 </script>
 
@@ -63,9 +124,9 @@ const addBook = () => {
         <div class="inner">
             <div class="innerer">
                 <div class="banner">
-                    <div class="left" @click="router.back()"><span>返回</span></div>
+                    <div class="left" @click="router.back()"><van-icon name="arrow-left" size="20px" /></div>
                     <div class="middle">Ledger</div>
-                    <div class="right" @click="isClickEdit"><span>修改</span></div>
+                    <div class="right" @click="isClickEdit"><van-icon name="edit" size="22" /></div>
                 </div>
                 <div class="content">
                     <div class="list">
@@ -75,16 +136,46 @@ const addBook = () => {
                                     <img src='picture/2023/02/10/cZkBewG65J3SjHr.png' alt="">
                                     <span>{{ item.name }}</span>
                                 </div>
-                                <img v-if="isimgshark" class="chacha" src="@/assets/img/Profile_Center/chacha.svg" alt="">
+                                <img v-if="isimgshark" @click="delBook(item.id, item.name, $event)" class="chacha"
+                                    src="@/assets/img/Profile_Center/chacha.svg" alt="">
                             </div>
                         </template>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="footer" @click="addBook" ref="Ref_Footer">
+        <div class="footer" @click="showPopUpBottom == true ? showPopUpBottom = false : showPopUpBottom = true"
+            ref="Ref_Footer">
             <span>Add your Ledger</span>
         </div>
+        <van-popup class="popup" v-model:show="showPopUpBottom" position="bottom" :style="{ height: '30%' }" round
+            closeable>
+            <div class="inner">
+                <div class="banner">
+                    <div class="left"><van-icon name="arrow-left" size="22" /></div>
+                    <div class="middle">
+                        <h2>Add Ledger</h2>
+                    </div>
+                </div>
+                <div class="conten">
+                    <div class="box icon">
+                        <img src="picture/2023/02/10/cZkBewG65J3SjHr.png" alt="">
+                        <div class="iright">
+                            <div class=" box name line type">
+                                <input type="text" v-model="subMit_name" placeholder="&ensp; Please enter a category name">
+                            </div>
+                        </div>
+                    </div>
+                    <div class=" box submit">
+                        <div class="btn" @click="submit">
+                            <van-icon name="success" size="36" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </van-popup>
+        <myDialog @update:amount="watch_input" :title="diaLog_title" :default_placeholder="default_placeholder"
+            :show="showDialog" :Close="Close" />
     </div>
 </template>
 
@@ -195,6 +286,12 @@ const addBook = () => {
     animation-fill-mode: none;
 }
 
+.flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .ledgerManager {
     box-sizing: border-box;
     position: fixed;
@@ -273,6 +370,7 @@ const addBook = () => {
                             }
 
                             span {
+                                text-align: center;
                                 font-size: 16px;
                                 font-weight: 500;
                             }
@@ -285,18 +383,93 @@ const addBook = () => {
         }
     }
 
+    .popup {
+        &.webkit-scroll {
+            display: none;
+        }
+
+        .inner {
+            padding: 10px;
+
+            .banner {
+                display: grid;
+                grid-template-columns: 1fr 2fr 1fr;
+
+                .left {
+                    display: flex;
+                    align-items: center;
+                }
+
+                .middle {
+                    display: flex;
+                    justify-content: center;
+                }
+            }
+
+            .conten {
+                padding: 20px 10px 0 10px;
+
+                .box {
+                    .flex()
+                }
+
+                .icon {
+                    display: flex;
+
+                    .iright {
+                        flex: 1;
+                        margin-left: 20px;
+                    }
+
+                    img {
+                        background-color: #bfbfbfAA;
+                        border-radius: 50px;
+                        width: 100px;
+                        width: 100px;
+                    }
+                }
+
+                .name {
+                    .flex();
+
+                    input {
+                        width: 95%;
+                        height: 50px;
+                        border-radius: 24px;
+                        background-color: #bfbfbfDD;
+                        border: 0;
+                        outline: none;
+                    }
+                }
+
+                .submit {
+                    display: flex;
+                    justify-content: flex-end;
+
+                    .btn {
+                        width: 100px;
+                        height: 50px;
+                        border-radius: 24px;
+                        background-color: #429690;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
+                }
+            }
+        }
+    }
+
     .footer {
-        margin-top: 60px;
-        position: fixed;
         z-index: 5;
+        .flex();
+        position: fixed;
+        margin-top: 60px;
         bottom: 0;
         left: 0;
         width: 100%;
         height: 80px;
         background-image: linear-gradient(120deg, #d7d7d7aa 100%, #616161aa 100%);
-        display: flex;
-        justify-content: center;
-        align-items: center;
 
         span {
             margin-top: 10px;

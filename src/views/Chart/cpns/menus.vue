@@ -4,15 +4,12 @@ import { ref } from 'vue';
 import useChartStore from '@/stores/modules/chart';
 import { storeToRefs } from 'pinia';
 const chartStore = useChartStore()
-const { menu } = storeToRefs(chartStore)
+const { menu, current_menu } = storeToRefs(chartStore)
 // 
 const ismenu = ref(false)
 
-
-const current_index = ref(0)
 const shift = (item, index) => {
-    current_index.value = index
-    menu.value = item
+    current_menu.value = item
     // console.log('这里是menus:', menu.value);
 }
 </script>
@@ -20,16 +17,16 @@ const shift = (item, index) => {
 <template>
     <div class="menus">
         <!-- <div class="menu" @click="ismenu == true ? ismenu = false : ismenu = true">
-                                                                                                                                                                                                                                                                        <span>Expense</span>
-                                                                                                                                                                                                                                                                        <van-icon v-if="ismenu == false" class="icon" name="arrow-down" />
-                                                                                                                                                                                                                                                                        <van-icon v-else-if="ismenu == true" class="icon" name="arrow-up" />
-                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                    <div class='at-container' :class="{ 'at-item': ismenu }">
-                                                                                                                                                                                                                                                                        <div id='at-item'></div>
-                                                                                                                                                                                                                                                                    </div> -->
+                                                                                                                                                                                                                                                                                <span>Expense</span>
+                                                                                                                                                                                                                                                                                <van-icon v-if="ismenu == false" class="icon" name="arrow-down" />
+                                                                                                                                                                                                                                                                                <van-icon v-else-if="ismenu == true" class="icon" name="arrow-up" />
+                                                                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                                                                            <div class='at-container' :class="{ 'at-item': ismenu }">
+                                                                                                                                                                                                                                                                                <div id='at-item'></div>
+                                                                                                                                                                                                                                                                            </div> -->
         <div class="menu">
-            <template v-for="(item, index) in ['Exp', 'Inc', 'Trf']" :key="index">
-                <div class=" item " :class="{ active: current_index == index }" @click="shift(item, index)"><span>{{ item
+            <template v-for="(item, index) in menu" :key="index">
+                <div class=" item " :class="{ active: current_menu == item }" @click="shift(item, index)"><span>{{ item
                 }}</span></div>
             </template>
         </div>

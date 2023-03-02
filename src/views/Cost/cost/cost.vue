@@ -1,27 +1,52 @@
 <script setup>
+// Vue
+import { reactive, ref, toRaw } from 'vue'
+import dayjs from 'dayjs'
+// Vant
+
+// Router
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
+// 组件
 import topBar from '@/components/topBar.vue'
 import banner from '@/components/banner.vue'
 import showMoney from './cpns/showmoney.vue'
 import list from './cpns/list.vue'
 import users from './cpns/users.vue'
 import pop from './cpns/pop.vue'
+// Store
+import useCostStore from '@/stores/modules/cost'     //Cost
+import useTabBarStore from '@/stores/modules/Tabbar' //TabBar
 
-import useCostStore from '@/stores/modules/cost'
-import useTabBarStore from '@/stores/modules/Tabbar'
 import { storeToRefs } from 'pinia'
-import { ref } from 'vue'
-
 const costStore = useCostStore()
 const { isHiddenUser } = storeToRefs(costStore)
 const tabBarStore = useTabBarStore()
 const { isShowBigButton, isShowBoundaries, tabBar } = storeToRefs(tabBarStore)
+// 路由
 const route = useRoute()
 const router = useRouter()
+// 
+console.log(route.params);
+const book_id = route.params.bookname.replace(':', '')
+const current_month = dayjs().subtract(1, 'month').format('YYYY-MM')
+const current_page = ref(1)
+const obj = reactive({
+    username: '',
+    total_expense: 0,
+    total_income: 0,
+    total_net: 0,
+    list: {},
+})
+costStore.get_bill_list(book_id, current_month, current_page.value).then(res => {
+    console.log(res.data.username, res.data.total_expense, res.data.total_income, res.data.total_net);
+    obj.username = res.data.username
+    obj.total_expense = res.data.total_expense
+    obj.total_income = res.data.total_income
+    obj.total_net = res.data.total_net
+    obj.list = res.data.list
+    console.log(toRaw(obj), '???');
+})
 
-const click = () => {
-    router.back()
-}
 
 onBeforeRouteLeave((to, from) => {
     const answer = window.confirm(
@@ -40,7 +65,6 @@ onBeforeRouteLeave((to, from) => {
 const ShowUsers = () => {
     isHiddenUser.value = false
 }
-// Vant
 
 </script>
 
@@ -49,9 +73,9 @@ const ShowUsers = () => {
         <topBar />
         <banner>
             <template #left>
-                <div class="left" @click="click">
+                <div class="left">
                     <span>Good afternoon,</span>
-                    <div class="name">Enjelin Morgeana</div>
+                    <div class="name">{{ obj?.username }}</div>
                 </div>
             </template>
             <template #right>
@@ -59,16 +83,12 @@ const ShowUsers = () => {
                     <img src="@/assets/img/Profile_Center/Center_tip.png" alt="">
                 </div>
             </template>
-
         </banner>
-        <showMoney />
+        <showMoney :expense="obj.total_expense" :income="obj.total_income" :net="obj.total_net" />
         <pop></pop>
-        <list />
+        <list :list="obj.list" />
         <users />
-        <!-- <div class="route">
-                                                                                            {{ route.path }}
-                                                                                        </div> -->
-</div>
+    </div>
 </template>
 
 <style lang="less" scoped>
@@ -76,8 +96,6 @@ const ShowUsers = () => {
     position: relative;
     width: 100vvw;
     height: 100vh;
-    overflow-y: auto;
-    margin-bottom: 60px;
 
     .left {
         color: #ffffff;

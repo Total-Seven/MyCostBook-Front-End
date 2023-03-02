@@ -1,14 +1,18 @@
 <script setup>
+// 
+import { toRaw } from 'vue';
+// 
 import { useRouter } from 'vue-router';
+// Store
+import useLoginStore from '@/stores/modules/login';
+import { storeToRefs } from 'pinia';
+const loginStore = useLoginStore()
+const { books } = storeToRefs(loginStore)
 const router = useRouter()
-
-defineProps({
-    books: {
-        type: Array,
-        defalut: () => []
-    }
-})
-
+// 
+setTimeout(() => {
+    console.log(toRaw(books.value));
+}, 2000)
 function getUrl(img) {
     return new URL(`../../../../assets/img/home/${img}`, import.meta.url).href
 }
@@ -35,6 +39,8 @@ const click = (bookName, bookId, bookType) => {
             <div class="book" @click="click(book.name, book.id, book.book_type)">
                 <h2>{{ book.name }}</h2>
                 <img :src="getUrl(book.img)" style="position: relative; display: block;" :style="book.style" />
+                <img src="@/assets/img/home/default.svg" style="position: relative; display: block;left:25px"
+                    :style="book.style" />
                 <div class="foot"></div>
             </div>
         </template>

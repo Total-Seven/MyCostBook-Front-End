@@ -1,34 +1,33 @@
 <script setup>
-import { ref } from 'vue';
+// Vue
+import { ref, toRaw } from 'vue';
+// Store
 import { storeToRefs } from 'pinia';
-import topBar from '@/components/topBar.vue';
+// 组件
+import topBackground from '@/components/topBar.vue';
 import banner from './cpns/banner.vue';
 import photo from './cpns/photo.vue';
 import list from './cpns/list.vue'
-
 // 网络+Store
 import useCenterStore from '@/stores/modules/center'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router';
 const centerStore = useCenterStore()
 const { user_info } = storeToRefs(centerStore)
+// 发送网络请求
 centerStore.getUserInfos()
-
 const test = ref({})
-//                                                                                              
+//专用于子路由更新的路由保安                                                                                              
 onBeforeRouteUpdate((to, from) => {
-    // 获取path 与后端属性匹配,动态传递数据给子组件
-    const component_name = to.path.replace('/', '')
+    const component_name = to.path.replace('/', '') // 获取path 与后端属性匹配,动态传递数据给子组件
     test.value = user_info.value[component_name]
 })
 
-const picture = user_info.value.inconFaultAvatar
 </script>
 
 <template>
     <div class="center">
-        <!-- 用router-view假装切换页面  注意：没有对应二级路径时，是否显示 -->
-        <RouterView :test="test" :picture="picture"></RouterView>
-        <topBar />
+        <RouterView :test="test" :picture="user_info.inconFaultAvatar"></RouterView> <!-- 用router-view假装切换页面 -->
+        <topBackground />
         <banner />
         <photo />
         <list />
@@ -36,9 +35,6 @@ const picture = user_info.value.inconFaultAvatar
 </template>
 
 <style lang="less" scoped>
-@first_color: rgba(66.17, 149.81, 143.75, 1);
-@second_color: rgba(42.47, 124.31, 118.38, 1);
-
 .center {
     position: relative;
 }

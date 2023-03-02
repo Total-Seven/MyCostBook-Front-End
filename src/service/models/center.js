@@ -5,7 +5,15 @@ export function getUserInfos() {
         url: `/user/get_userinfo`,
     })
 }
-
+export function editUserInfos(data) {
+    return LAxios.post({
+        url: `/user/edit_userinfo`,
+        Headers: {
+            "content-type": "application/x-www-form-urlencoded;charset=UTF-8"
+        },
+        data,
+    })
+}
 export function addCategory(data) {
     return LAxios.post({
         url: `/category/add`,
@@ -27,6 +35,24 @@ export function deleteCategory(data) {
 export function gerAllAcount() {
     return LAxios.get({
         url: `/account/getAllAccount`,
+    })
+}
+export function addAcount(data) {
+    return LAxios.post({
+        url: `/account/add`,
+        Headers: {
+            "content-type": "application/x-www-form-urlencoded;charset=UTF-8"
+        },
+        data,
+    })
+}
+export function delAccount(data) {
+    return LAxios.post({
+        url: `/account/delete`,
+        Headers: {
+            "content-type": "application/x-www-form-urlencoded;charset=UTF-8"
+        },
+        data,
     })
 }
 export function addBook(data) {

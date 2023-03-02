@@ -35,7 +35,6 @@ Highcahrts.setOptions({
     }
 });
 
-
 </script>
 
 <template>
@@ -47,12 +46,10 @@ Highcahrts.setOptions({
         <lineChart />
         <menus />
         <pieChart />
-        <!-- <br><br><br><br><br><br><br><br><br><br> -->
-        <!-- <br><br><br><br><br><br><br><br><br><br> -->
         <top />
         <!-- <pies /> -->
         <!-- </div> -->
-</div>
+    </div>
 </template>
 
 <style lang="less" scoped>

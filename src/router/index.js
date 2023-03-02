@@ -1,6 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import useTabBarStore from '@/stores/modules/Tabbar';
 import { storeToRefs } from 'pinia';
+import useChartStore from '@/stores/modules/chart';
+import usePlanStore from '@/stores/modules/plan';
+import useCenterStore from '@/stores/modules/center';
+import useLoginStore from '@/stores/modules/login';
+import useCostStore from '@/stores/modules/cost';
+// 
+import dayjs from 'dayjs'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,7 +46,7 @@ const router = createRouter({
       meta: {
         is_hidden_tabbar: false,
         index: 1
-      }
+      },
     },
     {
       path: '/cost:bookname',
@@ -49,22 +56,30 @@ const router = createRouter({
         is_hidden_tabbar: false,
         index: 1,
         activeimg: 'remove.png',
-        JumpPath: '/',
+        JumpPath: '/home',
         right: '25px',
         left: '25px',
         changeTabBar(tabBarStore, to, from) {
           const { isShowBigButton, isShowBoundaries, tabBar } = storeToRefs(tabBarStore)
           isShowBigButton.value = true
           isShowBoundaries.value = false
-          tabBar.value[0].activeimg = to.meta.activeimg
+          tabBar.value[0].activeimg = to.meta.activeimg   // 返回 
           tabBar.value[0].JumpPath = to.meta.JumpPath
           tabBar.value[1].style.right = to.meta.right
           tabBar.value[2].style.left = to.meta.left
         },
       },
-      beforeEnter(to, from) {
+      beforeEnter(to, from, next) {
+        // const costStore = useCostStore()
+        // let data = {}
         const tabBarStore = useTabBarStore()
         to.meta.changeTabBar(tabBarStore, to)
+        next()
+        // costStore.get_bill_list(to.params.bookname.replace(':', ''), dayjs().subtract(1, 'month').format('YYYY-MM'), 1).then(res => {
+        //   console.log(res.data);
+        //   data = res.data
+        //   next()
+        // })
       }
     },
     {
@@ -75,6 +90,11 @@ const router = createRouter({
       meta: {
         is_hidden_tabbar: false,
         index: 2
+      },
+      async beforeEnter(to, from, next) {
+        const chartStore = useChartStore()
+        const res = await chartStore.get_Exp_Data()
+        if (res) next()
       }
     },
     {
@@ -84,6 +104,15 @@ const router = createRouter({
       meta: {
         is_hidden_tabbar: false,
         index: 3
+      },
+      async beforeEnter(to, from, next) {
+        const planStore = usePlanStore()
+        await planStore.get_userBudget().then(res => {
+          console.log('!!!,请求成功🔥');
+          console.timeEnd('Fortune')
+          console.groupEnd('Fortune,发送网络请求');
+        })
+        next()
       }
     },
     {
@@ -101,7 +130,13 @@ const router = createRouter({
           component: () => import('@/views/Center/cpns/cpns/accountManager.vue'),
           meta: {
             is_hidden_tabbar: true
+          },
+          async beforeEnter(to, from, next) {
+            const centerStore = useCenterStore()
+            centerStore.Get_allAccount()
+            next()
           }
+
         },
         {
           path: '/books',
@@ -134,6 +169,7 @@ const router = createRouter({
 
 // 这是普通保安👇
 router.beforeEach(async (to, from) => {
+  console.group('router')
   console.warn('to.fullPath:', to.fullPath);            // /chart
   console.warn('to.hash:', to.hash);                    // 
   console.warn('to matched:', to.matched);              // [{path,redirect,name,,meta,components,children,aliasOf,beforeEnter,enterCallbacks}]
@@ -142,6 +178,8 @@ router.beforeEach(async (to, from) => {
   console.warn('to.params:', to.params);                // {}
   console.warn('to.path:', to.path);                    // /chart
   console.warn('to.redirectedFrom:', to.redirectedFrom);// undefined
+  console.groupEnd('router')
+
   // 有点像生命周期哈？在导航生效之前，执行的异步操作。
   // return false
   /**
@@ -178,15 +216,14 @@ router.beforeEach(async (to, from) => {
   else if (to.path == '/center') current_index.value = 3
 
   // 鉴权
-  if (to.path == '/register') { console.log('1'); }
+  if (to.path == '/register') { console.group('登录/注册页面'); }
   else if (sessionStorage.token) {
-    console.log('用户已登入过,放行', sessionStorage.token);
+    console.log('用户已登入过,放行');
   }
   else if (to.name !== '登入') {
-    console.log('没有登入过，重定向至登入');
+    console.warn('这货还没登入，重定向至=>“登入页面”');
     return '/login'
   }
-
 })
 // 这是解析保安👇
 router.beforeResolve(async to => {

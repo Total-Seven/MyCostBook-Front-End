@@ -1,6 +1,6 @@
 <script setup>
 // 响应式API
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 // 路由
 import { useRouter } from 'vue-router'
 // Store
@@ -13,21 +13,35 @@ import { createURLObj } from '@/utils/URLSearchParams';
 // Vant
 import { showFailToast } from 'vant';
 import 'vant/es/toast/style'
+// base64
+import { Base64 } from "js-base64";
+import docCookies from '@/utils/docCookies'
 
 const loginStore = useLoginStore()
 const { submit_login, token, isShowanimation } = storeToRefs(loginStore)
 // 路由
 const router = useRouter()
+// 账户密码
 const username = ref()
 const password = ref()
+const remember = ref()
+// Created
+function created() {
+    // 在页面加载时从cookie获取登录信息
+    let _username = docCookies.getItem("userName")
+    // 如果存在赋值给表单，并且将记住密码勾选
+    if (!_username) return
+    else {
+        let _password = Base64.decode(docCookies.getItem("passWord"))
+        username.value = _username
+        password.value = _password
+        remember.value = true
+    }
+}
+created()
 // 
 const text = ref('登入')
 const title = ref('登入')
-// ...
-watch([username, password], ([newV1, newV2], [oldV1, oldV2]) => {
-    console.log(newV1, newV2);
-})
-
 /**
  * 网络请求
  */
@@ -41,6 +55,20 @@ const click = () => {
         return
     }
     submit_login.value = createURLObj({ username: username.value, password: password.value })
+    if (remember.value) {
+        // 如果选择记住密码
+        // 加密
+        const pw = Base64.encode(password.value)
+        console.log('加密base码:', pw);
+        // cookie
+        docCookies.setItem('userName', username.value, Infinity,)
+        docCookies.setItem('passWord', pw, Infinity,)
+        console.log('记住密码:', '账号是：', docCookies.getItem('userName'), '密码是：', Base64.decode(docCookies.getItem('passWord')));
+    }
+    else if (!remember.value) {
+        docCookies.removeItem('userName')
+        docCookies.removeItem('passWord')
+    }
     // 发送请求
     loginStore.PostLogin().then(res => {
         if (res.code == 200) {
@@ -67,7 +95,6 @@ const click = () => {
         setTimeout(() => router.replace('/'), 1500)
     })
 }
-
 </script>
 
 <template>
@@ -86,25 +113,28 @@ const click = () => {
                 </div>
                 <div class="password glass">
                     <div class="icon"><img class="little" src="@/assets/img/register/password.svg" alt=""></div>
-                    <div class="text"><input v-model="password" type="text" placeholder="密码" name="name" id="name"
-                            onfocus="if(this.value=='密码'){this.value='';}" required autofocus></div>
+                    <div class="text"><input v-model="password" :type=showEyes placeholder="密码" name="password"
+                            id="password" onfocus="if(this.value=='密码'){this.value='';}" required autofocus></div>
+                </div>
+                <div class="remember">
+                    <label>记住密码</label>
+                    <input type="checkbox" v-model="remember">
                 </div>
                 <div class="signUp" @click="click">
                     <span v-if="isShowanimation == false" v-html="text"></span>
                     <div class="loading" v-if="isShowanimation == true">
                         <loading />
                     </div>
-
                 </div>
                 <div class="tip">
                     <div>Have Not Account? <span @click="router.push('/')"> Sign up</span></div>
                 </div>
                 <!-- <div class="others">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="box">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <img class="qq" src="@/assets/img/login/QQ.svg" alt="">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <img class="wechat" src="@/assets/img/login/wechat.svg" alt="">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </div> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="box">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <img class="qq" src="@/assets/img/login/QQ.svg" alt="">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <img class="wechat" src="@/assets/img/login/wechat.svg" alt="">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </div> -->
 
 
             </form>
@@ -228,6 +258,37 @@ const click = () => {
 
             .username {
                 margin-top: 20px
+            }
+
+            .password {
+                position: relative;
+
+                .eyes {
+                    position: absolute;
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+                    right: 20px;
+                    width: 20px;
+                    height: 20px;
+
+                    img {
+                        position: relative;
+                        top: 2px;
+                    }
+                }
+
+            }
+
+            .remember {
+                display: flex;
+                align-items: center;
+                color: rgba(0, 0, 0, 0.5);
+
+                input {
+                    margin-left: 4px;
+                }
+
             }
 
             .signUp {

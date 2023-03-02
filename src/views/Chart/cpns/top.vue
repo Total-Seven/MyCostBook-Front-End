@@ -4,17 +4,17 @@ import { ref, computed } from 'vue'
 import useChartStore from '@/stores/modules/chart';
 import { storeToRefs } from 'pinia';
 const chartStore = useChartStore()
-const { data, menu, current_tab, current_dateIndex } = storeToRefs(chartStore)
+const { data, current_menu, current_tab, current_dateIndex } = storeToRefs(chartStore)
 // 
 const date_arr = computed(() => {
-    return data.value[menu.value][current_tab.value].time  // 后端返回可选择的日期（用户有账单记录的）
+    return data.value[current_menu.value][current_tab.value].time  // 后端返回可选择的日期（用户有账单记录的）
 })
 const current_key = computed(() => {
     return date_arr.value[current_dateIndex.value]
 })
 
 const top_obj = computed(() => {
-    return data.value[menu.value][current_tab.value].top_obj
+    return data.value[current_menu.value][current_tab.value].top_obj
 })
 const top_array = computed(() => {
     return top_obj.value[current_key.value]
@@ -83,7 +83,6 @@ const listData = [
         bill_nnumber: '50',
     }
 ]
-
 function getUrl(img) {
     return new URL(`../../../assets/img/cost/list/other/${img}`, import.meta.url).href
 }

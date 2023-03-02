@@ -7,16 +7,14 @@ import Highcahrts from 'highcharts'
 import useChartStore from '@/stores/modules/chart';
 import { storeToRefs } from 'pinia';
 const chartStore = useChartStore()
-const { data, menu, tab, current_tab } = storeToRefs(chartStore)
-
-console.log(toRaw(data.value[menu.value][current_tab.value]),);
+const { data, current_tab, current_menu } = storeToRefs(chartStore)
 // 
 const line_array = computed(() => {
-    return data.value[menu.value][current_tab.value].line_array
+    return data.value[current_menu.value][current_tab.value].line_array
 })
 
 const categories = computed(() => {
-    return data.value[menu.value][current_tab.value].time
+    return data.value[current_menu.value][current_tab.value].time
 })
 
 

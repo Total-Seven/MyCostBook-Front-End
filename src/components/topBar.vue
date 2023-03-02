@@ -1,6 +1,3 @@
-<script setup>
-</script>
-
 <template>
     <div class="topbar">
         <img src="../assets/img/Common/common_Top.svg" alt="">
@@ -12,10 +9,10 @@
 
 <style lang="less" scoped>
 .topbar {
+    z-index: 1;
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 1;
 
     img {
         width: 100vw;
@@ -23,12 +20,11 @@
 
     .circle {
         img {
-            /* Group 6 */
             position: absolute;
-            width: 267px;
-            height: 219px;
             top: -30px;
             left: -70px;
+            width: 267px;
+            height: 219px;
         }
     }
 }
