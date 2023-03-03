@@ -28,7 +28,6 @@ defineProps({
     font-size: 16px;
     line-height: 26px;
 
-
     .info {
         margin-top: 3px;
     }

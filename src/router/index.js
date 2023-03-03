@@ -81,6 +81,15 @@ const router = createRouter({
         //   next()
         // })
       }
+
+    },
+    {
+      path: '/detail:id',
+      name: '详情',
+      component: () => import('@/views/Cost/cost/cpns/cpns/detail.vue'),
+      meta: {
+        is_hidden_tabbar: true,
+      },
     },
     {
       path: '/Chart',
@@ -154,14 +163,6 @@ const router = createRouter({
             is_hidden_tabbar: true
           }
         },
-        {
-          path: '/logout',
-          name: '退出登陆',
-          component: () => import('@/views/Center/cpns/cpns/logOut.vue'),
-          meta: {
-            is_hidden_tabbar: false
-          }
-        }
       ]
     }
   ]

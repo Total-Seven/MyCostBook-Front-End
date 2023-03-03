@@ -187,7 +187,7 @@ const setcolor = () => {
 </script>
 
 <template>
-    <div class="pie">
+    <div class="pie" v-if="pie_obj !== {}">
         <highcharts :options="chartOption2" style="width:380px;height:350px"></highcharts>
     </div>
 </template>

@@ -73,7 +73,7 @@ const total_infos = {
     <div class="LedgerHome">
         <topBar />
         <homeBanner />
-        <infos :total_infos="total_infos" />
+        <infos :total_infos="total_infos" class="infos" />
         <mybook />
         <!-- <tabbar class="tabbar"></tabbar> -->
         <planList />

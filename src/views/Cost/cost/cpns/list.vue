@@ -1,17 +1,23 @@
 <script setup>
+// router
+import { useRouter } from 'vue-router';
 // 
 import dayjs from 'dayjs';
-import { computed, toRaw } from 'vue';
+import { ref, computed, toRaw } from 'vue';
+// 
+const router = useRouter()
 // 
 const props = defineProps({
     list: {
         type: Object,
         default: () => { }
+    },
+    title_style: {
+        type: Object,
+        default: () => { }
     }
 })
-setTimeout(() => {
-    console.log(toRaw(props.list));
-}, 1500)
+const emit = defineEmits(['changeMonth'])
 // const list = [
 //     { icon: 'bangzhushouce.svg', name: 'Upwork', amount: '850.00', date: 'Today', style: { color: 'red' } },
 //     { icon: 'gongwenbao.svg', name: 'Transfer', amount: '85.00', date: 'Yesterday', style: { color: 'green' } },
@@ -25,6 +31,8 @@ setTimeout(() => {
 //     { icon: 'ziyuan42.svg', name: 'Upwork', amount: 850.00, date: 'Yesterday', style: { color: 'red' } },
 //     { icon: 'ziyuan22.svg', name: '', amount: 850.00, date: 'Jan 30,2022', style: { color: 'green' } },
 // ]
+const showPickDate = ref(false)
+const currentDate = ref([dayjs().format('YYYY'), dayjs().format('MM')])
 function getUrl(img) {
     return new URL(`../../../../assets/img/cost/list/other/${img}`, import.meta.url).href
 }
@@ -34,16 +42,50 @@ function getUrl(img) {
 function getTime(date) {
     return dayjs(date).format('HH:mm:ss')
 }
+// 
+function clickItem(item, index) {
+    console.log(toRaw(item), index);
+    router.push({
+        path: '/detail:id' + item.id,
+        query: item.id,
+        params: item
+    })
+}
+
+// 
+const titleText = ref('This Month Transactions')
+function confirms(value,) {
+    const year = value.selectedValues[0]
+    const month = value.selectedValues[1]
+    console.log(`${year}-${month}`);
+    /**
+    * 事件 emit =>给cost
+    * 
+    * 选择：只能今年1-12月
+    * 
+    * costStore.get_bill_list(book_id, current_month)
+    * 
+    * 重新发送网络请求：当前分页改为1   book_id不变    current_month 变
+    */
+    emit('changeMonth', `${year}-${month}`)
+    titleText.value = `${year}-${month} Transactions`
+    showPickDate.value = false
+}
 </script>
 
 <template>
+    <router-view></router-view>
+    <van-popup v-model:show="showPickDate" round position="center" :style="{ height: '30%', width: '100%', }">
+        <van-date-picker :columns-type="['year', 'month']" v-model="currentDate" title="选择日期" @confirm="confirms"
+            @cancel="showPickDate = false" />
+    </van-popup>
     <div class="list">
-        <div class="title">
+        <div class="title" @click="showPickDate = true" :class="title_style">
             <div class="titleInner">
                 <div class="left">
-                    <h3>Transactions History</h3>
+                    <h3 v-html="titleText"></h3>
                 </div>
-                <div class="right"><span>See all</span></div>
+                <div class="right"><span>See More</span></div>
             </div>
         </div>
         <div class="bills">
@@ -55,11 +97,11 @@ function getTime(date) {
                             <template #left>
                                 <van-button square type="primary" text="标记" class="delete-button-left" />
                             </template>
-                            <div class="iten">
+                            <div class="iten" @click="clickItem(item, index)">
                                 <div class="left">
                                     <div class="picture">
                                         <!-- <img src="../../../../assets/img/cost/list/airbnb.svg" alt=""
-                                                                                                                                        style="display: block;width: 44px;height:40px"> -->
+                                                                                                                                                                                                                                                                                                                                                                style="display: block;width: 44px;height:40px"> -->
                                         <img src="@/assets/img/cost/list/other/jinggao.svg" alt=""
                                             style="display: block;width: 35px;height:35px">
                                         <!-- <img :src="getUrl(item.icon)" alt="" style="display: block;width: 35px;height:35px"> -->
@@ -106,6 +148,10 @@ function getTime(date) {
     }
 
     .title {
+        position: sticky;
+        z-index: 9;
+        top: 0;
+        background-color: #fff;
         // box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.25);
 
         .titleInner {

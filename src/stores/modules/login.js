@@ -16,6 +16,8 @@ const useLoginStore = defineStore('login', {
         token: '',
         isShowanimation: false,
         books: {},
+        all_cg: [],
+        category_list: [],
         user_info: {
             infos: {},
             account: {},
@@ -37,6 +39,9 @@ const useLoginStore = defineStore('login', {
                 if (res) {
                     this.user_info.infos = res.data.userInfo
                     this.books = res.data.books
+                    this.category_list = res.data.category_list
+                    this.all_cg = res.data.all_cg
+                    // 账户
                     this.user_info.account = res.data.accounts
                     this.user_info.net = res.data.net
                     this.user_info.assets = res.data.assets
