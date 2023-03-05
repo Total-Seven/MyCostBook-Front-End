@@ -15,7 +15,7 @@ import bannerVue from '@/components/banner.vue';
             <template #right>
                 <div class='text'>
                     <!-- <img src="@/assets/img/home/sharpicons_Rabbit.svg" alt=""> -->
-                    <div>Little-Rabbit </div>
+                    <div> </div>
                 </div>
             </template>
         </bannerVue>

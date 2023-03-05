@@ -1,21 +1,36 @@
 <script setup>
 // Vue
-import { ref, reactive, computed, watch, onMounted, onUpdated, toRaw, getCurrentInstance } from 'vue'
+import { ref, computed, } from 'vue'
 // Router
 import { useRoute, useRouter } from 'vue-router';
 // Utils
-
+import dayjs from 'dayjs'
 // 组件
 import backGround from '@/components/topBar.vue';
 import banner from '@/components/banner.vue';
 // Store
-
+import { storeToRefs } from 'pinia';
+import useCostStore from '@/stores/modules/cost';
+const costStore = useCostStore()
+const { bill_detail } = storeToRefs(costStore)
 /**
 * var
 */
 const route = useRoute()
-const router = useRouter(0)
-console.log(route.params, route.query);
+const router = useRouter()
+// Good xxxx 
+const status = computed(() => {
+    if (bill_detail.value.pay_type == 2) return 'Expense'
+    else if (bill_detail.value.pay_type == 1) return 'Income'
+    else if (bill_detail.value.pay_type == 3) return 'Transfer'
+})
+// 格式化日期
+const time = computed(() => {
+    return dayjs(bill_detail.value.date).format('HH:mm:ss')
+})
+const date = computed(() => {
+    return dayjs(bill_detail.value.date).format('MM DD,YYYY ')
+})
 /**
 * function
 */
@@ -29,44 +44,50 @@ console.log(route.params, route.query);
         <div class="banner">
             <banner>
                 <template #middle>
-                    <div @click="router.back()" class="text" style="width:250px ;">
+                    <div class="text" style="width:250px ;">
                         <span style="position: relative; right:55px">Transaction Details</span>
                     </div>
                 </template>
-
                 <template #left>
-                    <div class="left">
+                    <div class="left" @click="router.back()">
                         <div class="btn">
                             <img src="@/assets/img/Profile_Center/Center_left_alllow.png" alt="">
                         </div>
                     </div>
                 </template>
             </banner>
-
         </div>
         <div class="content">
             <div class="top">
                 <div class="icon">
                     <img src="@/assets/img/Profile_Center/Center_avatar.png" alt="">
                 </div>
-                <div class="status"><span>Expense</span></div>
-                <div class="amount">$85.00</div>
+                <div class="status"><span>{{ status }}</span></div>
+                <div class="amount">${{ bill_detail.amount }}</div>
             </div>
             <div class="middle">
                 <div class="first">
                     <div class="title">
                         <span>Transaction details</span>
                     </div>
-                    <div class="line status"><span class="lineLeft">Status</span> <span>Expense</span></div>
-                    <div class="line to"><span class="lineLeft">To</span> <span>Claire Jovalski</span></div>
-                    <div class="line time"><span class="lineLeft">Time</span> <span>04:30 PM</span></div>
-                    <div class="line date"><span class="lineLeft">Date</span> <span>Feb 29,2022</span></div>
+                    <div class="line status"><span class="lineLeft">Status</span> <span>{{ status }}</span></div>
+                    <!-- <div class="line to"><span class="lineLeft">To</span> <span>Claire Jovalski</span></div> -->
+                    <div class="line time"><span class="lineLeft">Time</span> <span>{{ time }}</span></div>
+                    <div class="line date"><span class="lineLeft">Date</span> <span>{{ date }}</span></div>
                 </div>
                 <div class="second">
-                    <div class="line remark"><span class="lineLeft">remark</span> <span>abcdefghijklmn</span></div>
+                    <div class="line "><span class="lineLeft">Ledger</span> <span>{{ bill_detail.book_name }}</span>
+                    </div>
+                    <div class="line "><span class="lineLeft">Type</span> <span>{{ bill_detail.type_name }}</span>
+                    </div>
+                    <div class="line "><span class="lineLeft">Category</span> <span>{{ bill_detail.category_name }}</span>
+                    </div>
+                    <div class="line remark"><span class="lineLeft">remark</span> <span>{{ bill_detail.remark }}</span>
+                    </div>
+
                 </div>
                 <div class="third">
-                    <div class="line tital"><span class="lineLeft">total</span> <span>$84.00</span></div>
+                    <div class="line tital"><span class="lineLeft">total</span> <span>${{ bill_detail.amount }}</span></div>
                 </div>
             </div>
             <div class="btn">

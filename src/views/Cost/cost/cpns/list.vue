@@ -1,9 +1,17 @@
 <script setup>
+// utils
+import { createURLObj } from '@/utils';
 // router
 import { useRouter } from 'vue-router';
 // 
 import dayjs from 'dayjs';
 import { ref, computed, toRaw } from 'vue';
+
+import useCostStore from '@/stores/modules/cost'     //Cost
+import { storeToRefs } from 'pinia';
+const costStore = useCostStore()
+const { del_bill_info } = storeToRefs(costStore)
+// import { resolveBaseUrl } from 'vite';
 // 
 const router = useRouter()
 // 
@@ -43,8 +51,8 @@ function getTime(date) {
     return dayjs(date).format('HH:mm:ss')
 }
 // 
-function clickItem(item, index) {
-    console.log(toRaw(item), index);
+function clickItem(item, value) {
+    console.log('ID:', item.id, 'date:', item.date, toRaw(value), value.date, '同组账单', value.bills);
     router.push({
         path: '/detail:id' + item.id,
         query: item.id,
@@ -71,6 +79,41 @@ function confirms(value,) {
     titleText.value = `${year}-${month} Transactions`
     showPickDate.value = false
 }
+let isClickDel = ref(false)
+function beforeClose({ position }) {
+    switch (position) {
+        case 'right': {
+            if (isClickDel == true) {
+                return new Promise((resolve, reject) => {
+                    console.log('点击删除后关闭');
+                    isClickDel.value = false
+                    return true
+                })
+            }
+        }
+    }
+}
+function del_bill(value, item) {
+    isClickDel = true
+    console.log('del:', toRaw(item), 'in=>', toRaw(value.bills));
+    // 发送网络请求，
+    del_bill_info.value = createURLObj({ id: item.id })
+    // 返回200
+    costStore.post_del_bill().then(data => {
+        console.log(data);
+        const targetIndex = value.bills.findIndex(el => {
+            el.id == item.id
+        })
+        // 删除数据
+        value.bills.splice(targetIndex, 1)
+    })
+}
+const red_style = { color: '#ff5b5b' }
+const green_style = { color: '#52a3a1' }
+function set_style(type) {
+    if (type == 2) return red_style
+    if (type == 1) return green_style
+}
 </script>
 
 <template>
@@ -93,15 +136,15 @@ function confirms(value,) {
                 <div class="item">
                     <h3>{{ value.date }}</h3>
                     <template v-for="(item, index) in value.bills" :key="index">
-                        <van-swipe-cell>
+                        <van-swipe-cell :before-close="beforeClose">
                             <template #left>
                                 <van-button square type="primary" text="标记" class="delete-button-left" />
                             </template>
-                            <div class="iten" @click="clickItem(item, index)">
+                            <div class="iten" @click="clickItem(item, value)">
                                 <div class="left">
                                     <div class="picture">
                                         <!-- <img src="../../../../assets/img/cost/list/airbnb.svg" alt=""
-                                                                                                                                                                                                                                                                                                                                                                style="display: block;width: 44px;height:40px"> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            style="display: block;width: 44px;height:40px"> -->
                                         <img src="@/assets/img/cost/list/other/jinggao.svg" alt=""
                                             style="display: block;width: 35px;height:35px">
                                         <!-- <img :src="getUrl(item.icon)" alt="" style="display: block;width: 35px;height:35px"> -->
@@ -111,10 +154,14 @@ function confirms(value,) {
                                         <div class="bottom"><span> {{ getTime(item.date) }} </span></div>
                                     </div>
                                 </div>
-                                <div class="amount" :style="item.style"><span>${{ item.amount }}</span></div>
+                                <div class="amount" :style="item.style"><span :style="set_style(item.pay_type)">${{
+                                    item.amount
+                                }}</span>
+                                </div>
                             </div>
                             <template #right>
-                                <van-button square type="danger" text="删除" class="delete-button-right" />
+                                <van-button square type="danger" @click="del_bill(value, item)" text="删除"
+                                    class="delete-button-right" />
                                 <van-button square type="primary" text="退款" class="delete-button-right"
                                     style="background-color: pink;border-color: pink;" />
                             </template>

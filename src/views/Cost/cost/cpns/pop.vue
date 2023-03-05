@@ -1,21 +1,27 @@
 <script setup>
 import { ref, reactive, watch, toRaw, computed } from 'vue'
 import { storeToRefs } from 'pinia'
-// 
+// Util
+import { createURLObj } from '@/utils'
+// router
+import { useRoute } from 'vue-router'
 import dayjs from 'dayjs'
 // Store
 import useCostStore from '@/stores/modules/cost'
 import useLoginStore from '@/stores/modules/login'
+import { arrayExpression } from '@babel/types'
 const loginStore = useLoginStore()
 const { user_info, category_list } = storeToRefs(loginStore)
 // 用户ID： user_info.value.infos.id
-// 
+//
 const costStore = useCostStore()
-const { show, popUp_category_list, popUp_account } = storeToRefs(costStore)
+const { obj, add_bill_info, show, popUp_category_list, popUp_account, type } = storeToRefs(costStore)
+// 
+const route = useRoute()
 // setTimeout(() => {
 //     console.log(toRaw(popUp_category_list.value), toRaw(popUp_account.value));
 // }, 2000);
-const amount_value = ref(0)
+const amount_value = ref()
 const showBottom = ref()
 const style = {
     display: 'block', width: '32px', height: '32px', position: 'relative',
@@ -23,6 +29,8 @@ const style = {
     'box-shadow': '0px 4px 4px #666',
     'border-radius': '16px',
 }
+
+
 
 const select_date = ref('今日')
 const currentDate = ref([dayjs().format('YYYY'), dayjs().format('MM'), dayjs().format('DD')])
@@ -35,7 +43,7 @@ const confirms = () => {
 }
 
 // Tabs
-const active = ref(0)
+const active = ref('Expense')
 watch(active, (newV) => {
     console.log('active', newV);
     if (newV == 1) plusSubtract.value = '+'
@@ -54,6 +62,7 @@ watch(currentDate, (newV) => {
  */
 // 替换文本
 const text_select_account = ref('选择账户')
+const select_account_id = ref()
 const plusSubtract = ref('-')
 // 开关
 const isShowSelectAccount = ref(false)
@@ -73,7 +82,7 @@ const options_account = computed(() => {
 })
 // 关
 function selectAccount(option, index) {
-    console.log(option.name, index);
+    select_account_id.value = option.id
     text_select_account.value = option.name
     isShowSelectAccount.value = false
 }
@@ -81,20 +90,256 @@ function selectCategory(option, index) {
     console.log(option, index);
     options_category.value.push(category1)
 }
-//
+//category
+const activeId = ref()
+const activeIndex = ref()
+const items = computed(() => {
+    return type.value[active.value]
+})
+// const items = [
+
+//     {
+//         "id": 1,
+//         "name": "餐饮",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "餐饮",
+//         "children": [
+//             {
+//                 "id": 136,
+//                 "name": "三餐",
+//                 "type_id": 1,
+//                 "user_id": 50,
+//                 "avatar": "0"
+//             }
+//         ]
+//     },
+//     {
+//         "id": 2,
+//         "name": "服饰",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "服饰"
+//     },
+//     {
+//         "id": 3,
+//         "name": "交通",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "交通"
+//     },
+//     {
+//         "id": 4,
+//         "name": "日常",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "日常"
+//     },
+//     {
+//         "id": 5,
+//         "name": "购物",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "购物",
+//         children: [
+//             {
+//                 "id": 135,
+//                 "text": "购物清单",
+//                 "type_id": 5,
+//                 "user_id": 50,
+//                 "avatar": "https://s2.loli.net/2023/02/10/cZkBewG65J3SjHr.png"
+//             }
+//         ]
+//     },
+//     {
+//         "id": 6,
+//         "name": "医疗",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "医疗"
+//     },
+//     {
+//         "id": 7,
+//         "name": "学习",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "学习"
+//     },
+//     {
+//         "id": 8,
+//         "name": "旅行",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "旅行"
+//     },
+//     {
+//         "id": 9,
+//         "name": "人情",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "人情"
+//     },
+//     {
+//         "id": 10,
+//         "name": "其他",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "其他"
+//     },
+//     {
+//         "id": 17,
+//         "name": "住宿",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "住宿"
+//     },
+//     {
+//         "id": 18,
+//         "name": "娱乐",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "娱乐"
+//     },
+//     {
+//         "id": 19,
+//         "name": "美妆",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "美妆"
+//     },
+//     {
+//         "id": 20,
+//         "name": "会员",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "会员",
+//         "children": [
+//             {
+//                 "id": 137,
+//                 "name": "社交VIP",
+//                 "type_id": 20,
+//                 "user_id": 50,
+//                 "avatar": "0"
+//             }
+//         ]
+//     },
+//     {
+//         "id": 21,
+//         "name": "通讯",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "通讯"
+//     },
+//     {
+//         "id": 25,
+//         "name": "恋爱",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "恋爱"
+//     },
+//     {
+//         "id": 26,
+//         "name": "吸烟",
+//         "type": 1,
+//         "user_id": 0,
+//         "text": "吸烟"
+//     }
+// ]
+
+// 提交
+
+function Submit(params) {
+    let date = 0
+    if (select_date.value == '今日') {
+        console.log('默认');
+        date = dayjs().format('YYYY-MM-DD')
+    }
+    else {
+        console.log('用户选择日期');
+        date = select_date.value
+    }
+    let payType = active.value == 'Expense' ? 2 : 1
+    console.group('Submit');
+    console.log('pay_type:', payType)
+    console.log('account_id:', select_account_id.value);
+    console.log('book_id:', route.params.bookname.replace(':', ''))
+    console.log('category_id:', choice_category.value.id);
+    console.log('category_name:', choice_category.value.name);
+    console.log('amount:', amount_value.value);
+    console.log('date:', date);
+    console.groupEnd('Submit');
+    add_bill_info.value = createURLObj({
+        pay_type: payType,
+        amount: amount_value.value,
+        account_id: select_account_id.value,
+        book_id: route.params.bookname.replace(':', ''),
+        category_id: choice_category.value.id,
+        category_name: choice_category.value.name,
+        budget_mode: 0,
+        date: date
+    })
+    costStore.post_add_bill().then(data => {
+        console.log(data);
+        // 添加成功后处理
+        const target_objIndex = obj.value.list.findIndex(_obj => {
+            return _obj.date == date
+        })
+        const insertObj = { id: data.id, pay_type: payType, amount: amount_value.value, date: date, category_id: choice_category.value.id, category_name: choice_category.value.name }
+        if (target_objIndex !== -1) {
+            console.log('找到targetIndex');
+            obj.value.list[target_objIndex].bills.unshift(insertObj)
+        }
+        else if (target_objIndex == -1) {
+            console.log('没找到');
+            if (dayjs().isBefore(dayjs(date))) {
+                obj.value.list.unshift({
+                    date: date,
+                    bills: [insertObj]
+                })
+            }
+            else {
+                obj.value.list.push({
+                    date: date,
+                    bills: [insertObj]
+                })
+            }
+        }
+    })
+    show.value = false
+    setTimeout(() => {
+        select_date.value = '今日'
+        text_select_account.value = '选择账户'
+        Text_category.value = '选择分类'
+        select_account_id.value = 0
+        choice_category.value = {}
+        amount_value.value = undefined
+    }, 1500);
+}
+
+function clickNav(index) {
+    console.log(index);
+}
+const Text_category = ref('选择分类')
+const choice_category = ref()
+function clickItem(item) {
+    console.log(item);
+    isShowSelectCategory.value = false
+    choice_category.value = item
+    Text_category.value = item.name
+}
 </script>
 
 <template>
     <div class="pop">
         <van-popup v-model:show="show" round position="bottom" :style="{ padding: '58px 30px', height: '85%' }" closeable
-            close-icon-position="top-left" close-on-click-overlay="false">
+            close-icon-position="top-left">
             <div class="tabs">
                 <van-tabs v-model:active="active" swipeable animated>
                     <!-- <van-tab v-for="pay_type in ['Expense', 'Income', 'transform']" :title="pay_type" disabled>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <h2> pay_type</h2> {{ index }}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </van-tab> -->
-                    <van-tab title="Expense"></van-tab>
-                    <van-tab title="Income"> </van-tab>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <h2> pay_type</h2> {{ index }}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </van-tab> -->
+                    <van-tab title="Expense" name="Expense"></van-tab>
+                    <van-tab title="Income" name="Income"> </van-tab>
                     <van-tab title="transform" disabled></van-tab>
                 </van-tabs>
             </div>
@@ -102,15 +347,16 @@ function selectCategory(option, index) {
                 <div class="box category" @click="ClickCategory">
                     <div class="leftBox categoryLeft">
                         <img src="@/assets/img/cost/list/other/shoubiao.svg" alt="" :style="style">
-                        <span>选择分类</span>
+                        <span v-html="Text_category"></span>
                     </div>
                     <div class="categoryRight">
                         <van-icon name="arrow-down" />
                     </div>
                 </div>
                 <van-popup v-model:show="isShowSelectCategory" round position="bottom"
-                    :style="{ padding: '58px 30px', height: '62%' }" closeable close-icon-position="top-left"
-                    close-on-click-overlay="false">
+                    :style="{ padding: '58px 30px', height: '62%' }" closeable close-icon-position="top-left">
+                    <van-tree-select @click-nav="clickNav" @click-item="clickItem" height="450" v-model:active-id="activeId"
+                        v-model:main-active-index="activeIndex" :items="items" />
                 </van-popup>
                 <div class="box account">
                     <div class="leftBox accountLeft" @click="ClickAccount">
@@ -134,7 +380,7 @@ function selectCategory(option, index) {
                             @cancel="showBottom = false" />
                     </van-popup>
                 </div>
-                <div class="box submit">
+                <div class="box submit" @click="Submit">
                     <span>Submit</span>
                 </div>
                 <div class="calculator">
@@ -143,8 +389,8 @@ function selectCategory(option, index) {
                 </div>
                 <div class="others"></div>
             </div>
-            <van-share-sheet v-model:show="isShowSelectAccount" title="选择账户" :options="options_account"
-                @select="selectAccount" />
+            <van-share-sheet :options="options_account" @select="selectAccount" title="选择账户"
+                v-model:show="isShowSelectAccount" />
         </van-popup>
     </div>
 </template>

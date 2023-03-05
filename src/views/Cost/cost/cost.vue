@@ -1,6 +1,6 @@
 <script setup>
 // Vue
-import { watch, reactive, ref, toRaw } from 'vue'
+import { watch, reactive, ref, toRaw, onActivated } from 'vue'
 import dayjs from 'dayjs'
 // Vant
 // Hook
@@ -20,7 +20,7 @@ import useLoginStore from '@/stores/modules/login'
 import useTabBarStore from '@/stores/modules/Tabbar' //TabBar
 import { storeToRefs } from 'pinia'
 const costStore = useCostStore()
-const { isHiddenUser, popUp_account, popUp_category_list, fixedTitle, current_page } = storeToRefs(costStore)
+const { obj, isHiddenUser, popUp_account, popUp_category_list, fixedTitle, current_page } = storeToRefs(costStore)
 const tabBarStore = useTabBarStore()
 const { isShowBigButton, isShowBoundaries, tabBar } = storeToRefs(tabBarStore)
 const loginStore = useLoginStore()
@@ -34,30 +34,23 @@ const router = useRouter()
 const Ref_cost = ref()
 const Ref_banner = ref()
 // 
-console.log(route.params);
 const book_id = route.params.bookname.replace(':', '')
 const current_month = dayjs().format('YYYY-MM')
-const obj = reactive({
-    username: '',
-    total_expense: 0,
-    total_income: 0,
-    total_net: 0,
-    list: {},
-})
+// 
 costStore.get_bill_list(book_id, current_month).then(res => {
-    obj.username = res.data.username
-    obj.total_expense = res.data.total_expense
-    obj.total_income = res.data.total_income
-    obj.total_net = res.data.total_net
-    obj.list = [...res.data.list]
-    console.log(toRaw(obj), '???');
+    obj.value.username = res.data.username
+    obj.value.total_expense = res.data.total_expense
+    obj.value.total_income = res.data.total_income
+    obj.value.total_net = res.data.total_net
+    obj.value.list = [...res.data.list]
+    console.log(toRaw(obj.value), '???');
 })
 
 
 onBeforeRouteLeave((to, from) => {
-    const answer = window.confirm(
-        'Do you really want to leave? you have unsaved changes!'
-    )
+    // const answer = window.confirm(
+    //     'Do you really want to leave? you have unsaved changes!'
+    // )
     console.log(isShowBigButton.value, isShowBoundaries.value, tabBar.value);
     isShowBigButton.value = false;
     isShowBoundaries.value = true;
@@ -65,16 +58,17 @@ onBeforeRouteLeave((to, from) => {
     tabBar.value[1].style.right = '0'
     tabBar.value[2].style.left = '0'
     // 取消导航并停留在同一页面上
-    if (!answer) return false
+    // if (!answer) return false
 })
 
 // 
 const welcome = ref('Good afternoon,')
 function changeWelcomText() {
     const time = dayjs().format('HH')
-    if (time > 6 && time << 12) welcome.value = 'Good Morning'
-    if (time > 12 && time < 19) welcome.value = 'Good Afternoon'
-    if (time > 19) welcome.value = 'Good Evening'
+    console.log('现在的时间是:', time);
+    if (time >= 6 && time < 12) welcome.value = 'Good Morning'
+    if (time >= 12 && time < 19) welcome.value = 'Good Afternoon'
+    if (time >= 19) welcome.value = 'Good Evening'
 }
 changeWelcomText()
 // 
@@ -100,11 +94,11 @@ watch(top, (newV) => {
     if (isReachBottom.value == true) {
         console.log('发送请求');
         costStore.get_bill_list(book_id, current_month).then(res => {
-            obj.username = res.data.username
-            obj.total_expense = res.data.total_expense
-            obj.total_income = res.data.total_income
-            obj.total_net = res.data.total_net
-            obj.list.push(...res.data.list)
+            obj.value.username = res.data.username
+            obj.value.total_expense = res.data.total_expense
+            obj.value.total_income = res.data.total_income
+            obj.value.total_net = res.data.total_net
+            obj.value.list.push(...res.data.list)
         })
     }
     if (top.value > 400) {
@@ -120,15 +114,22 @@ function changemonth(month) {
     console.time('切换月份')
     current_page.value = 1
     costStore.get_bill_list(book_id, month).then(res => {
-        obj.username = res.data.username
-        obj.total_expense = res.data.total_expense
-        obj.total_income = res.data.total_income
-        obj.total_net = res.data.total_net
-        obj.list = res.data.list
+        obj.value.username = res.data.username
+        obj.value.total_expense = res.data.total_expense
+        obj.value.total_income = res.data.total_income
+        obj.value.total_net = res.data.total_net
+        obj.value.list = res.data.list
     })
     console.timeEnd('切换月份')
     console.groupEnd('切换月份')
 }
+
+
+// 
+onActivated(() => {
+    console.log('activated', top.value);
+    Ref_cost.value.scrollTop = top.value
+})
 </script>
 
 <template>

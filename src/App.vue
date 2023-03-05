@@ -1,5 +1,5 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
+import {  RouterView } from 'vue-router'
 import { useRoute, useRouter } from 'vue-router';
 import login from '@/components/welcome.vue'
 import tabbar from './components/tabbar.vue';
@@ -9,7 +9,12 @@ const route = useRoute();
 <template>
   <div class="app">
     <login />
-    <RouterView />
+    <RouterView v-slot="{ Component }">
+      <KeepAlive>
+        <component :is="Component" :key="$route.name" v-if="$route.meta.KeepAlive" />
+      </KeepAlive>
+      <component :is="Component" v-if="!$route.meta.KeepAlive" />
+    </RouterView>
     <!--  -->
     <tabbar class="tabbar" v-if="!route.meta.is_hidden_tabbar" />
   </div>

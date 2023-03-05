@@ -1,12 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import useTabBarStore from '@/stores/modules/Tabbar';
+// Store
 import { storeToRefs } from 'pinia';
+import useTabBarStore from '@/stores/modules/Tabbar';
 import useChartStore from '@/stores/modules/chart';
 import usePlanStore from '@/stores/modules/plan';
 import useCenterStore from '@/stores/modules/center';
 import useLoginStore from '@/stores/modules/login';
 import useCostStore from '@/stores/modules/cost';
-// 
+// 日期
 import dayjs from 'dayjs'
 
 const router = createRouter({
@@ -44,6 +45,7 @@ const router = createRouter({
       name: '首页',
       component: () => import('@/views/Cost/Ledger/home.vue'),
       meta: {
+        KeepAlive: true,
         is_hidden_tabbar: false,
         index: 1
       },
@@ -53,6 +55,7 @@ const router = createRouter({
       name: '记账',
       component: () => import('@/views/Cost/cost/cost.vue'),
       meta: {
+        KeepAlive: true,
         is_hidden_tabbar: false,
         index: 1,
         activeimg: 'remove.png',
@@ -90,6 +93,13 @@ const router = createRouter({
       meta: {
         is_hidden_tabbar: true,
       },
+      beforeEnter(to, from, next) {
+        const costStore = useCostStore()
+        const id = to.params.id.replace(':id', '')
+        console.log(id);
+        costStore.get_detail(id)
+        next()
+      }
     },
     {
       path: '/Chart',
@@ -123,6 +133,25 @@ const router = createRouter({
         })
         next()
       }
+    },
+    {
+      path: '/plan_detail',
+      name: '计划详情',
+      component: () => import('@/views/Cost/Ledger/cpns/cpns/plan_detail.vue'),
+      meta: {
+        is_hidden_tabbar: true,
+        index: 3
+      },
+      // async beforeEnter(to, from, next) {
+      //   console.log(to.path);
+      //   // const planStore = usePlanStore()
+      //   // await planStore.get_userBudget().then(res => {
+      //   //   console.log('!!!,请求成功🔥');
+      //   //   console.timeEnd('Fortune')
+      //   //   console.groupEnd('Fortune,发送网络请求');
+      //   // })
+      //   // next()
+      // }
     },
     {
       path: '/Center',
@@ -170,16 +199,16 @@ const router = createRouter({
 
 // 这是普通保安👇
 router.beforeEach(async (to, from) => {
-  console.group('router')
-  console.warn('to.fullPath:', to.fullPath);            // /chart
-  console.warn('to.hash:', to.hash);                    // 
-  console.warn('to matched:', to.matched);              // [{path,redirect,name,,meta,components,children,aliasOf,beforeEnter,enterCallbacks}]
-  console.warn('to.meta:', to.meta);                    // {is_hidden_tabbar: false, index: 2}
-  console.warn('to.name:', to.name);                    // 图表
-  console.warn('to.params:', to.params);                // {}
-  console.warn('to.path:', to.path);                    // /chart
-  console.warn('to.redirectedFrom:', to.redirectedFrom);// undefined
-  console.groupEnd('router')
+  // console.group('router')
+  // console.warn('to.fullPath:', to.fullPath);            // /chart
+  // console.warn('to.hash:', to.hash);                    // 
+  // console.warn('to matched:', to.matched);              // [{path,redirect,name,,meta,components,children,aliasOf,beforeEnter,enterCallbacks}]
+  // console.warn('to.meta:', to.meta);                    // {is_hidden_tabbar: false, index: 2}
+  // console.warn('to.name:', to.name);                    // 图表
+  // console.warn('to.params:', to.params);                // {}
+  // console.warn('to.path:', to.path);                    // /chart
+  // console.warn('to.redirectedFrom:', to.redirectedFrom);// undefined
+  // console.groupEnd('router')
 
   // 有点像生命周期哈？在导航生效之前，执行的异步操作。
   // return false
@@ -219,7 +248,7 @@ router.beforeEach(async (to, from) => {
   // 鉴权
   if (to.path == '/register') { console.group('登录/注册页面'); }
   else if (sessionStorage.token) {
-    console.log('用户已登入过,放行');
+    console.warn('路由保安叔叔🧔：用户已登入,放行');
   }
   else if (to.name !== '登入') {
     console.warn('这货还没登入，重定向至=>“登入页面”');

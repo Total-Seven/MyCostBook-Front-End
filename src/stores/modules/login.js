@@ -15,15 +15,20 @@ const useLoginStore = defineStore('login', {
         submit_login: {},
         token: '',
         isShowanimation: false,
+        // 
         books: {},
+        plan_list: [],
         all_cg: [],
         category_list: [],
+        // 
         user_info: {
             infos: {},
             account: {},
             net: 0,
             assets: 0,
             debt: 0,
+            saved_money: 0,
+            budget: 0,
         }
     }),
     actions: {
@@ -41,11 +46,14 @@ const useLoginStore = defineStore('login', {
                     this.books = res.data.books
                     this.category_list = res.data.category_list
                     this.all_cg = res.data.all_cg
+                    this.plan_list = res.data.plan
                     // 账户
                     this.user_info.account = res.data.accounts
                     this.user_info.net = res.data.net
                     this.user_info.assets = res.data.assets
                     this.user_info.debt = res.data.debt
+                    this.user_info.saved_money = res.data.Saved_Money
+                    this.user_info.budget = res.data.userInfo.budget
                     console.log('成功返回', res);
                     resolve(res)
                     this.isShowanimation = false

@@ -3,16 +3,29 @@
 import { toRaw } from 'vue';
 // 
 import { useRouter } from 'vue-router';
+// 网络请求
+import LAxios from '@/service/request/index'
 // Store
 import useLoginStore from '@/stores/modules/login';
 import { storeToRefs } from 'pinia';
-const loginStore = useLoginStore()
-const { books } = storeToRefs(loginStore)
-const router = useRouter()
 // 
-setTimeout(() => {
-    console.log(toRaw(books.value));
-}, 2000)
+const loginStore = useLoginStore()
+const { books, plan_list, user_info } = storeToRefs(loginStore)
+const router = useRouter()
+//
+if (books.value = {}) {
+    const res = await LAxios.get({
+        url: '/user/get_userinfo'
+    })
+    if (res.code == 200) {
+        books.value = res.data.books
+        plan_list.value = res.data.plan
+        user_info.value.infos.budget = res.data.userInfo.budget
+        user_info.value.net = res.data.net
+        user_info.value.saved_money = res.data.Saved_Money
+    }
+    else console.log(res);
+}
 function getUrl(img) {
     return new URL(`../../../../assets/img/home/${img}`, import.meta.url).href
 }
