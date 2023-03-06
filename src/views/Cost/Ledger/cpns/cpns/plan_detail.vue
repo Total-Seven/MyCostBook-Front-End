@@ -2,18 +2,25 @@
 // Vue
 import { ref, reactive, computed, watch, onMounted, onUpdated, toRaw, getCurrentInstance } from 'vue'
 // Vant
+import { showSuccessToast, showFailToast } from 'vant'
+import 'vant/es/toast/style'
 // Utils
 import dayjs from 'dayjs'
 // 组件
 // Router
 import { useRoute, useRouter } from 'vue-router'
+import { createURLObj } from '@/utils'
 // Store
-
+import useCostStore from '@/stores/modules/cost'
+import { storeToRefs } from 'pinia'
+const costStore = useCostStore()
+const { update_plan_info } = storeToRefs(costStore)
 /**
 * var
 */
 const route = useRoute()
 const router = useRouter(0)
+const Deposited = ref(Number(route.query.saved_money))
 /**
 * function
 */
@@ -45,7 +52,57 @@ for (let index = 0; index < detail_arr.value.length; index++) {
 }
 // 点击事件 翻页 加钱
 function clickItem(item, index, $event) {
-    item.active == true ? item.active = false : item.active = true
+
+    console.log(item.active);  //undefined false
+    const add_obj = { id: route.query.id, daily_money: route.query.daily_money, mode: 1 }
+    const sub_obj = { id: route.query.id, daily_money: route.query.daily_money, mode: 2 }
+
+    if (item.active == undefined || item.active == false) {
+        /**
+        * 发送网络请求：id(route.query.id)、daily_money (route.query.daily_money)
+        * return 200
+        * 手动修改active   ()
+        */
+        update_plan_info.value = createURLObj(add_obj)
+        costStore.Update_plan()
+            .then(data => {
+                // 修改总金额
+                console.log(Deposited.value);
+                Deposited.value += Number(route.query.daily_money)
+                console.log(Deposited.value);
+                // 修改总金额 End
+                console.log(data);
+                showSuccessToast('成功')
+                item.active == true ? item.active = false : item.active = true
+            })
+            .catch(() => {
+                showFailToast('失败')
+            })
+    }
+    else if (item.active == true) {
+        // true
+        /**
+         * 发送网络请求：id(route.query.id)、daily_money (route.query.daily_money)
+         * return 200
+         * 手动修改active   ()
+         */
+        update_plan_info.value = createURLObj(sub_obj)
+        costStore.Update_plan().then(data => {
+            // 修改总金额
+            console.log(Deposited.value);
+            Deposited.value -= Number(route.query.daily_money)
+            console.log(Deposited.value);
+            // 修改总金额 End
+            console.log(data);
+            showSuccessToast('成功')
+            item.active == true ? item.active = false : item.active = true
+        }).catch(() => {
+            showFailToast('失败')
+        })
+    }
+    // finally  
+
+
 }
 //保留两位小数
 function keepTwoDecimalStr(num) {
@@ -90,14 +147,14 @@ const persentage = computed(() => {
             </div>
             <div class="progress">
                 <div class="box top">
-                    <span>Deposited ￥{{ route.query.saved_money }}</span><span>remaining ￥{{ route.query.target_money -
+                    <span>Deposited ￥{{ Deposited }}</span><span>remaining ￥{{ route.query.target_money -
                         route.query.saved_money }}</span>
                 </div>
                 <div class="middle">
                     <div class="progresss">
-                        <van-progress inactive :percentage="persentage" />
+                        <van-progress inactive :percentage="persentage * 100" />
                     </div>
-                    <span>{{ persentage }}%</span>
+                    <span>{{ persentage * 100 }}%</span>
                 </div>
                 <div class="box bottom">
                     <span>{{ dayjs(route.query.start_date).format('YYYY-MM-DD') }} / {{
@@ -112,7 +169,8 @@ const persentage = computed(() => {
         </div>
         <div class="content">
             <template v-for="(item, index) in         detail_arr" :key="index">
-                <div class="item" :class="{ 'style-filled': item.active }" @click="clickItem(item, index)">
+                <div class="item" :class="{ flip: item.active, 'style-filled': item.active }"
+                    @click="clickItem(item, index)">
                     <div class="amount">
                         ￥ <span>{{ item.amount }}</span>
                     </div>
@@ -125,6 +183,39 @@ const persentage = computed(() => {
 </template>
 
 <style lang="less" scoped>
+@keyframes flip-vertical {
+
+    0% {
+        transform: translateZ(-800px) rotateY(90deg);
+        opacity: 0;
+    }
+
+    50% {
+        transform: translateZ(-160px) rotateY(87deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateZ(0) rotateY(0);
+    }
+}
+
+
+.flip {
+
+    // width: 100px;
+    // height: 100px;
+    background-color: #ffe672;
+    animation-name: flip-vertical;
+    animation-duration: .5s;
+    animation-timing-function: linear;
+    animation-delay: 0s;
+    animation-iteration-count: 1;
+    animation-direction: normal;
+    animation-fill-mode: forwards;
+
+}
+
 .flex {
     display: flex;
     justify-content: center;

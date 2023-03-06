@@ -34,6 +34,7 @@ const { userinfo, set_budget_info } = storeToRefs(planStore)
 */
 const Ref_highCharts = ref()
 const instance = getCurrentInstance()
+console.log(userinfo.value.budget);
 const max = computed({
     get() {
         return userinfo.value.budget
@@ -235,12 +236,12 @@ onMounted(() => {
             name: '本月支出',
             data: [userinfo.value.current_budget],
             innerRadius: 80,
-            dataLabels: {
-                useHTML: true,
-                format: '<div style="text-align:center;border:0;outline:none;"><span span style="font-size:25px;color:' +
-                    ('black') + '"><span style="font-size:12px;color:#777777"></span>{y:.1f}</span>' +
-                    '</div>',
-            },
+            // dataLabels: {
+            //     useHTML: true,
+            //     format: '<div style="text-align:center;border:0;outline:none;"><span span style="font-size:25px;color:' +
+            //         ('black') + '"><span style="font-size:12px;color:#777777"></span>{y:.1f}</span>' +
+            //         '</div>',
+            // },
             tooltip: {
                 valueSuffix: '元'
             }

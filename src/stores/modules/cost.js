@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { toRaw } from "vue";
-import { get_list, del_bill, detail, add_bill, create_plan, delete_plan } from '@/service/index'
+import { get_list, del_bill, detail, add_bill, create_plan, delete_plan, Update_plan } from '@/service/index'
 
 const store = {
     state() {
@@ -10,6 +10,7 @@ const store = {
             // 
             add_plan_info: {},
             del_plan_info: {},
+            update_plan_info: {},
             // 
             obj: {
                 username: '',
@@ -31,6 +32,7 @@ const store = {
     },
     getters: {},
     actions: {
+        // 记账页--列表
         async get_bill_list(book_id, current_month) {
             console.group('get_bill_list,发送网络请求');
             console.log('...loading',);
@@ -60,6 +62,17 @@ const store = {
                 }
             })
         },
+        async post_add_bill() {
+            console.time('添加账单');
+            return new Promise(async (resolve, reject) => {
+                const res = await add_bill(this.add_bill_info)
+                if (res.code == 200) {
+                    console.timeEnd('添加账单');
+                    console.log('add_bill🔥成功', res.data);
+                    resolve(res.data)
+                }
+            })
+        },
         async post_del_bill() {
             console.time('删除账单');
             return new Promise(async (resolve, reject) => {
@@ -71,6 +84,7 @@ const store = {
                 }
             })
         },
+        // 记账页--详情
         async get_detail(id) {
             const res = await detail(id)
             if (res.code == 200) {
@@ -78,6 +92,7 @@ const store = {
                 console.log('get_detail成功🔥', this.bill_detail);
             }
         },
+        // 首页--计划
         async post_create_plan() {
             console.log('post_create_plan');
             return new Promise(async (resolve, reject) => {
@@ -102,6 +117,20 @@ const store = {
                 }
                 else {
                     console.log('❗❗❗失败❗❗❗');
+                }
+            })
+        },
+        async Update_plan() {
+            console.log('post_Update_plan');
+            return new Promise(async (resolve, reject) => {
+                const res = await Update_plan(this.update_plan_info)
+                if (res.code === 200) {
+                    console.log('_Update_plan成功🔥', res.data);
+                    resolve(res.data)
+                }
+                else {
+                    console.log('❗❗❗失败❗❗❗');
+                    reject()
                 }
             })
         }

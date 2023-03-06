@@ -8,7 +8,11 @@ const Ref_content = ref()
 const isShowLis = ref(false)
 const arrow_down = '15px'
 
-
+const shopping_list = ref([
+    { isShow: false, goodsList: [{ name: '臭袜子', amount: 88, checked: false }, { name: '钵钵鸡', amount: 88, checked: false }, { name: '旅游', amount: 88, checked: false }, { name: '+', amount: 88, checked: false, isAddBtn: true }] },
+    { isShow: false, goodsList: [{ name: '吃火锅', amount: 77, checked: false }, { name: 'DUnk', amount: 88, checked: false }, { name: '+', amount: 88, checked: false, isAddBtn: true }] },
+    { isShow: false, goodsList: [{ name: '衣服', amount: 66, checked: false }, { name: '+', amount: 88, checked: false, isAddBtn: true }] }
+])
 // Touch事件
 // ********
 let targetDom = {}
@@ -155,58 +159,124 @@ function handleTouchend(e) { // 拖拽结束
 const clickLi = () => {
     console.log('li');
 }
+const checked = ref(false)
+function fold(item, index) {
+    console.log(item, index);
+    item.isShow = item.isShow == true ? false : true
+}
+/**一键记账 */
+function charge() {
+    console.log('charge');
+    /**
+     * （inventory_id）
+     * 弹出选择框，选择扣款账户（account_id）
+     * 账本默认为购物清单，分类也默认为购物清单
+     * 金额 需要计算
+     * /**
+     *  *  根据复选框选中的item，计算总金额，并且将每个item的id提交（goods_list_id）
+     *  *  服务器根据id列表，在goods表里，删除它们，并且在inventory里的include_number减去列表的长度.总金额也需扣掉 (goods_total_amount)
+     *  *  完成inventory表和goods的变化后，再判断当前total_amount和include_number是否为0，是则 在subscription写入finish，返回
+     *  *  前端根据subscription字段 选择不渲染此清单，而是转入已完成的地方。 
+     *  */
+}
+function Delete_Inventory() {
+    console.log('Delete');
+}
+/**Map 商品序号和名字 */
+function map_goods_name(iten, indey) {
+    if (iten.isAddBtn) return `${iten.name}`
+    else return `No.${indey + 1} --   ${iten.name}    ￥${iten.amount}`
+}
 </script>
 
 <template>
+    <!-- ref可判断当前组件位置 -->
     <div class="content" ref="Ref_content">
+        <!-- 在整个Plan页面是foot -->
         <div class="foot">
+            <!-- Touch事件触发口 -->
             <div class="FootBanner" @touchstart="handleTouchstart" @touchmove="handleTouchmove" @touchend="handleTouchend"
                 @touchmove.stop.prevent>
                 <div class="line"></div>
             </div>
+            <!-- Touch事件触发口 -->
             <h2 class="title">Shopping List</h2>
+            <!-- 清单列表 -->
             <div class="list">
-                <template v-for="(item, index) in 10" :key="index">
-                    <div class="item">
-                        <div class="item-inner">
-                            <div class="ul">
-                                <div class="left">
-                                    <div class="icon"><img src="@/assets/img/cost/list/airbnb.svg" alt=""></div>
-                                    <div class="name">Buy electronic product </div>
-                                </div>
-                                <div class="right">
-                                    <div class="top">
-                                        <div class="money">
-                                            <img src="../img/money.svg" alt="">
+                <template v-for="(item, index) in shopping_list" :key="index">
+                    <!-- 滑动单元格--右滑删除 -->
+                    <van-swipe-cell right-width="100">
+                        <div class="item">
+                            <div class="item-inner">
+                                <!-- 图表、标题、总金额 -->
+                                <div class="ul">
+                                    <div class="left">
+                                        <div class="icon"><img src="@/assets/img/cost/list/airbnb.svg" alt=""></div>
+                                        <div class="name">Buy electronic product </div>
+                                    </div>
+                                    <div class="right">
+                                        <div class="top">
+                                            <div class="money">
+                                                <img src="../img/money.svg" alt="">
+                                            </div>
+                                            <div class="amount">￥777.00</div>
                                         </div>
-                                        <div class="amount">￥777.00</div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="lis" v-if="isShowLis == true">
-                                <template v-for="(iten, indey) in 3">
-                                    <div class="li">
-                                        <span class="number"> {{ indey + 1 }}.</span>
-                                    </div>
-                                </template>
-                            </div>
-                            <div class="fooot">
-                                <div class="show" @click="isShowLis == true ? isShowLis = false : isShowLis = true">
-                                    <van-icon name="arrow-down" :size=arrow_down />
+                                <!-- 图表、标题、总金额 -->
+                                <!-- 商品Goods列表 -->
+                                <div class="lis" v-if="item.isShow">
+                                    <van-cell-group inset>
+                                        <van-cell :class="{ 'lastLi': iten.isAddBtn }"
+                                            style="background-color: #c7dcda;text-shadow: 0 0 2px #799;"
+                                            v-for="(iten, indey) in item.goodsList" :title="map_goods_name(iten, indey)"
+                                            class="li" :key="iten">
+                                            <template #right-icon>
+                                                <van-checkbox v-if="!iten.isAddBtn" icon-size="24px"
+                                                    style="border: 0;border-radius: 50%;box-shadow:0 1px 6px #799;"
+                                                    v-model="iten.checked" checked-color="#ffda72FF" :name="item"
+                                                    @click.stop />
+                                            </template>
+                                        </van-cell>
+                                    </van-cell-group>
                                 </div>
-                                <div class="purchase"><span>一键记账</span></div>
+                                <!-- 商品Goods列表 -->
+                                <!-- "展开"和"一键记账"按钮 -->
+                                <div class="fooot">
+                                    <div class="show" @click="isShowLis == true ? isShowLis = false : isShowLis = true">
+                                        <van-icon @click="fold(item, index)" name="arrow-down" :size=arrow_down />
+                                    </div>
+                                    <div class="purchase" @click="charge"><span>一键记账</span></div>
+                                </div>
+                                <!-- "展开"和"一键记账"按钮 -->
                             </div>
-
                         </div>
-                    </div>
+                        <!-- 删除按钮 -->
+                        <template #right>
+                            <div style="height:100%;display: flex;justify-content: center;align-items: center;"
+                                class="icon">
+                                <van-icon @click="Delete_Inventory" name="photo-fail" size="35" />
+                            </div>
+                        </template>
+                        <!-- 删除按钮 -->
+                    </van-swipe-cell>
+                    <!-- 滑动单元格--右滑删除 -->
                 </template>
-
             </div>
+            <!-- 清单列表 -->
         </div>
-</div>
+        <!-- 在整个Plan页面是foot -->
+    </div>
+    <!-- ref可判断当前组件位置 -->
 </template>
 
 <style lang="less" scoped>
+.lastLi {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .content {
     width: 100vw;
     height: 80%;
@@ -251,6 +321,7 @@ const clickLi = () => {
                 background-color: #5baba5aa;
                 border-radius: 15px;
 
+
                 .ul {
                     display: flex;
                     justify-content: space-between;
@@ -271,6 +342,7 @@ const clickLi = () => {
                         .name {
                             margin-left: 15px;
                             font-size: 14px;
+                            font-weight: 700;
                         }
                     }
 
@@ -307,9 +379,10 @@ const clickLi = () => {
 
                 .lis {
                     margin-top: 15px;
-                    padding-left: 55px;
+                    padding-left: 20px;
 
                     .li {
+
                         .number {
                             font-size: 16px;
                         }
@@ -317,7 +390,7 @@ const clickLi = () => {
                 }
 
                 .fooot {
-                    margin-top: 4px;
+                    margin-top: 15px;
                     display: flex;
                     flex-direction: row-reverse;
                     justify-content: flex-start;

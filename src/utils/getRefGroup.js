@@ -5,6 +5,7 @@ export default function getRefGroup() {
 
     const handle = (refs) => {
         try {
+            console.log('refs');
             group.push(refs)
         } catch (error) {
             console.log(error);

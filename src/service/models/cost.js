@@ -46,3 +46,12 @@ export function delete_plan(data) {
         data,
     })
 }
+export function Update_plan(data) {
+    return LAxios.post({
+        url: `/plan/update`,
+        Headers: {
+            "content-type": "application/x-www-form-urlencoded;charset=UTF-8"
+        },
+        data,
+    })
+}

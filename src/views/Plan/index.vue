@@ -124,6 +124,21 @@ watch([moveX, moveY], ([newV1, newV2], [oldV1, oldV2]) => {
 onMounted(() => {
 })
 
+const goodsList = reactive([{ name: '商品', amount: 88.00, subscrition: '描述' }])
+const showBottom_popup = ref(false)
+function Create_Inventory() {
+    console.log('Create_Inventory');
+    showBottom_popup.value = true
+    /**
+     * 1. 弹出PopUp
+     * 2. 填写信息
+     * 3. 提交
+     * 4. 网络请求
+     * 5. 成功处理
+     * /**
+     * 
+     *  */
+}
 </script>
 
 <template>
@@ -133,10 +148,46 @@ onMounted(() => {
             <div class="del" ref="Ref_target" @touchmove.stop.prevent>来抓我呀</div>
             <dashBoard />
             <div class="options">
-                <div class="one box">Shopping List</div>
+                <div class="one box" @click="Create_Inventory">Shopping List</div>
                 <div class="two box">Saving Plan</div>
             </div>
             <content ref='Ref_content' />
+            <van-popup v-model:show="showBottom_popup" round position="bottom" :style="{ height: '70%' }">
+                <div class="popUp-inner">
+                    <div class="topBar">
+                        <div class="icon_leave"><van-icon @click="showBottom_popup = false" size="20" name="arrow-left" />
+                        </div>
+                        <div class="title">Create ShoppingList</div>
+                    </div>
+                    <div class="infos">
+                        <div class="icon"><img src="@/assets/img/cost/list/linkedin.svg" alt=""></div>
+                        <div class="name">
+                            <input type="text" placeholder="Input your ShoppingList Name">
+                        </div>
+                    </div>
+                    <div class="list">
+                        <div class="nav"><span>Goods List</span></div>
+                        <template v-for="(item, index) in goodsList">
+                            <div class="item">
+                                <div class="icon"><img src="@/assets/img/cost/list/github.svg" alt=""></div>
+                                <div class="middle">
+                                    <div class="name">{{ item.name }}</div>
+                                    <div class="sub">{{ item.subscrition }}</div>
+                                </div>
+                                <div class="right">
+                                    <div class="amount">￥{{ item.amount }}</div>
+                                    <div class="btn"><van-icon color="#555" name="cross" size="18" /></div>
+                                </div>
+                            </div>
+
+                        </template>
+                    </div>
+                    <div class="btns">
+                        <div class="btn add" @click="click">Add Goods</div>
+                        <div class="btn submit">Submit</div>
+                    </div>
+                </div>
+            </van-popup>
         </div>
     </div>
 </template>
@@ -202,6 +253,148 @@ onMounted(() => {
             background-color: #57e3b9;
         }
 
+    }
+
+    .popUp-inner {
+        box-sizing: border-box;
+        padding: 20px;
+
+        .topBar {
+            display: grid;
+            grid-template-columns: .7fr 2fr;
+
+            .title {
+                font-size: 20px;
+                font-weight: 550;
+            }
+        }
+
+        .infos {
+            display: flex;
+            padding: 20px;
+
+
+            .icon {
+                display: grid;
+                width: 70px;
+                height: 70px;
+                background-color: bisque;
+                border-radius: 24px;
+
+                img {
+                    place-self: center;
+                    width: 50px;
+                    height: 50px;
+                }
+            }
+
+            .name {
+                display: flex;
+                flex: 1;
+                align-items: center;
+                margin-left: 10%;
+
+                input {
+                    flex: 1;
+                    height: 80%;
+                    text-align: center;
+                    border: 0;
+                    background-color: bisque;
+                    border-radius: 24px;
+                }
+            }
+        }
+
+        .list {
+            padding: 0 30px;
+            overflow-y: auto;
+            height: 35vh;
+            border-top: 2px solid #429690;
+            border-radius: 12px;
+            border-bottom: 2px solid #429690;
+
+            .nav {
+                margin-top: 10px;
+                display: flex;
+                justify-content: center;
+
+                span {
+                    position: relative;
+                    right: 4px;
+                    font-size: 20px;
+                    font-weight: 550;
+                    color: #027f87;
+                }
+            }
+
+            .item {
+                display: grid;
+                grid-template-columns: .6fr 1fr .3fr;
+                grid-template-rows: repeat(auto-fill 1fr);
+                margin-top: 10px;
+                padding: 10px;
+                background-color: #fae3c6;
+                border-radius: 24px;
+
+                .icon {
+                    img {
+                        width: 50px;
+                        height: 50px;
+                    }
+                }
+
+                .middle {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    color: #7d7f7f;
+
+                    .name {
+                        font-size: 18px;
+                        font-weight: 600;
+                    }
+
+                    .sub {
+                        margin-top: 6px;
+                        font-size: 12px;
+                    }
+                }
+
+                .right {
+                    display: flex;
+                    align-items: center;
+
+                    .amount {
+                        font-size: 18px;
+                        font-weight: 550;
+                        margin-right: 15px
+                    }
+
+                }
+            }
+        }
+
+        .btns {
+            padding: 20px;
+            display: flex;
+            justify-content: space-evenly;
+
+
+            .btn {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 120px;
+                height: 50px;
+                font-size: 16px;
+                font-weight: 600;
+                text-shadow: 0 0 2px #eeeeee;
+                background-color: #429690;
+                border-radius: 24px;
+                color: aliceblue;
+                box-shadow: 0 0 5px #027f87;
+            }
+        }
     }
 }
 </style>
