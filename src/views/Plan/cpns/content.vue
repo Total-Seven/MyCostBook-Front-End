@@ -1,19 +1,20 @@
 <script setup>
 import { move } from '@antfu/utils';
-import { is } from '@babel/types';
-import { ref, reactive, watch, onMounted } from 'vue';
-const Ref_content = ref()
+import { ref, onMounted, toRaw } from 'vue';
+// Vant
+import { showConfirmDialog, closeDialog } from 'vant';
+import 'vant/es/dialog/style'
+import { showNotify } from 'vant';
+import 'vant/es/notify/style'
+// Store
+import usePlanStore from '@/stores/modules/plan';
+import { storeToRefs } from 'pinia';
+import { createURLObj } from '@/utils';
+const planStore = usePlanStore()
+const { shopping_list, delete_ShoppingList_info, add_goods_info, del_goods_info_id } = storeToRefs(planStore)
 
-
-const isShowLis = ref(false)
-const arrow_down = '15px'
-
-const shopping_list = ref([
-    { isShow: false, goodsList: [{ name: '臭袜子', amount: 88, checked: false }, { name: '钵钵鸡', amount: 88, checked: false }, { name: '旅游', amount: 88, checked: false }, { name: '+', amount: 88, checked: false, isAddBtn: true }] },
-    { isShow: false, goodsList: [{ name: '吃火锅', amount: 77, checked: false }, { name: 'DUnk', amount: 88, checked: false }, { name: '+', amount: 88, checked: false, isAddBtn: true }] },
-    { isShow: false, goodsList: [{ name: '衣服', amount: 66, checked: false }, { name: '+', amount: 88, checked: false, isAddBtn: true }] }
-])
 // Touch事件
+const Ref_content = ref()
 // ********
 let targetDom = {}
 // ********
@@ -99,9 +100,6 @@ function handlerMounted() {
     ideal.start_top = Math.floor(targetDom.getBoundingClientRect().top)    // 距离视口顶部的高度
     ideal.start_bottom = Math.floor(targetDom.getBoundingClientRect().bottom)    // 距离视口顶部的高度
 }
-onMounted(handlerMounted)
-
-
 function handleTouchstart(e) { // 开始拖拽
     console.log('start');
     // 基础：
@@ -151,22 +149,16 @@ function handleTouchend(e) { // 拖拽结束
         ideal.redirecte()
     })
 }
+onMounted(handlerMounted)
 
 
-/**
- * 点击list
- */
-const clickLi = () => {
-    console.log('li');
-}
-const checked = ref(false)
+/**展开与折叠 */
 function fold(item, index) {
-    console.log(item, index);
     item.isShow = item.isShow == true ? false : true
 }
 /**一键记账 */
-function charge() {
-    console.log('charge');
+function charge(item, index) {
+    console.log('charge', item.name);
     /**
      * （inventory_id）
      * 弹出选择框，选择扣款账户（account_id）
@@ -179,21 +171,112 @@ function charge() {
      *  *  前端根据subscription字段 选择不渲染此清单，而是转入已完成的地方。 
      *  */
 }
-function Delete_Inventory() {
-    console.log('Delete');
-}
 /**Map 商品序号和名字 */
 function map_goods_name(iten, indey) {
     if (iten.isAddBtn) return `${iten.name}`
     else return `No.${indey + 1} --   ${iten.name}    ￥${iten.amount}`
+}
+/**删除购物清单 */
+function Delete_list(item, index) {
+    const beforeClose = (action) => {
+        if (action === 'confirm') {
+            delete_ShoppingList_info.value = createURLObj({ id: item.id })
+            planStore.Post_Delete_Shopping_list().then(res => {
+                shopping_list.value.splice(index, 1)
+                showNotify({ type: 'success', message: '删除成功' });
+                closeDialog()
+            }).catch(() => {
+                showNotify({ type: 'warning', message: '删除失败' });
+                closeDialog()
+            })
+        }
+        else {
+            closeDialog()
+        }
+    }
+    /**确认 */
+    showConfirmDialog({
+        message:
+            `确定删除清单：${item.name}吗？`,
+        beforeClose,
+    });
+    console.log(item, index);
+}
+/**点击+ */
+const show_addGoods_popUp = ref(false)
+const text_add_title = ref('Add Goods')
+const cur_item = ref()
+const cur_indey = ref()
+function clickIten(item, index, iten, indey) {
+    console.log('del_id:', iten.id);
+    console.log(item.goods_list[indey]);
+    if (iten.name !== '+') {
+        console.log(toRaw(item), iten);
+        const beforeClose = (action) => {
+            if (action === 'confirm') {
+                del_goods_info_id.value = iten.id
+                planStore.Post_Del_Goods().then(res => {
+                    item.goods_list.splice(indey, 1)
+                    showNotify({ type: 'success', message: '删除成功' });
+                    closeDialog()
+                }).catch(() => {
+                    showNotify({ type: 'warning', message: '删除失败' });
+                    closeDialog()
+                })
+            }
+            else {
+                closeDialog()
+            }
+        }
+        /**确认 */
+        showConfirmDialog({
+            message:
+                `确定删除商品：${iten.name} 吗？`,
+            beforeClose,
+        });
+    }
+    else {
+        cur_item.value = item
+        cur_indey.value = indey
+        console.log(toRaw(item.goods_list[indey - 1]), indey);
+        show_addGoods_popUp.value = true
+    }
+}
+const cur_Goods_describe = ref()
+const cur_Goods_amount = ref()
+const cur_Goods_name = ref()
+function submit_addGoods() {
+    console.log(cur_item.value, cur_indey.value);
+    if (!cur_Goods_name.value || !cur_Goods_amount.value) {
+        text_add_title.value = '商品名和金额不能为空'
+        setTimeout(() => {
+            text_add_title.value = 'Add Goods'
+        }, 1200);
+        return
+    }
+    const goods_obj = { name: cur_Goods_name.value, amount: cur_Goods_amount.value, describe: cur_Goods_describe.value, list_id: cur_item.value.id, list_name: cur_item.value.name, picture: '' }
+    // /**网络请求 */
+    add_goods_info.value = createURLObj(goods_obj)
+    planStore.Post_Add_Goods().then(data => {
+        const target_id = data.new_goods[0].id
+        // 成功👇
+        /**前端处理 */
+        const new_obj = { id: target_id, ...goods_obj, checked: false }
+        console.log(new_obj);
+        cur_item.value.goods_list.splice(cur_indey.value, 0, new_obj)
+        showNotify({ type: 'success', message: '添加成功' });
+        show_addGoods_popUp.value = false
+    })
+
+    // creating_shoppingList.value.goods_list.push(goods_obj)
 }
 </script>
 
 <template>
     <!-- ref可判断当前组件位置 -->
     <div class="content" ref="Ref_content">
-        <!-- 在整个Plan页面是foot -->
-        <div class="foot">
+        <!-- 在整个Plan页面中是foot -->
+        <div id="foot" class="foot">
             <!-- Touch事件触发口 -->
             <div class="FootBanner" @touchstart="handleTouchstart" @touchmove="handleTouchmove" @touchend="handleTouchend"
                 @touchmove.stop.prevent>
@@ -211,15 +294,18 @@ function map_goods_name(iten, indey) {
                                 <!-- 图表、标题、总金额 -->
                                 <div class="ul">
                                     <div class="left">
-                                        <div class="icon"><img src="@/assets/img/cost/list/airbnb.svg" alt=""></div>
-                                        <div class="name">Buy electronic product </div>
+                                        <div class="icon">
+                                            <img v-if="item.icon !== ''" :src="item.icon" alt="">
+                                            <img v-else src="@/assets/img/cost/list/airbnb.svg" alt="">
+                                        </div>
+                                        <div class="name">{{ item.name }} </div>
                                     </div>
                                     <div class="right">
                                         <div class="top">
                                             <div class="money">
                                                 <img src="../img/money.svg" alt="">
                                             </div>
-                                            <div class="amount">￥777.00</div>
+                                            <div class="amount">￥{{ item.total }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -227,9 +313,10 @@ function map_goods_name(iten, indey) {
                                 <!-- 商品Goods列表 -->
                                 <div class="lis" v-if="item.isShow">
                                     <van-cell-group inset>
-                                        <van-cell :class="{ 'lastLi': iten.isAddBtn }"
+                                        <van-cell @click="clickIten(item, index, iten, indey)"
+                                            :class="{ 'lastLi': iten.isAddBtn }"
                                             style="background-color: #c7dcda;text-shadow: 0 0 2px #799;"
-                                            v-for="(iten, indey) in item.goodsList" :title="map_goods_name(iten, indey)"
+                                            v-for="(iten, indey) in item.goods_list" :title="map_goods_name(iten, indey)"
                                             class="li" :key="iten">
                                             <template #right-icon>
                                                 <van-checkbox v-if="!iten.isAddBtn" icon-size="24px"
@@ -243,19 +330,21 @@ function map_goods_name(iten, indey) {
                                 <!-- 商品Goods列表 -->
                                 <!-- "展开"和"一键记账"按钮 -->
                                 <div class="fooot">
-                                    <div class="show" @click="isShowLis == true ? isShowLis = false : isShowLis = true">
-                                        <van-icon @click="fold(item, index)" name="arrow-down" :size=arrow_down />
+                                    <div class="show">
+                                        <van-icon v-if="!item.isShow" @click="fold(item, index)" name="arrow-down"
+                                            size="15" />
+                                        <van-icon v-else @click="fold(item, index)" name="arrow-up" size="15" />
                                     </div>
-                                    <div class="purchase" @click="charge"><span>一键记账</span></div>
+                                    <div class="purchase" @click="charge(item, index)"><span>一键记账</span></div>
                                 </div>
                                 <!-- "展开"和"一键记账"按钮 -->
                             </div>
                         </div>
                         <!-- 删除按钮 -->
                         <template #right>
-                            <div style="height:100%;display: flex;justify-content: center;align-items: center;"
-                                class="icon">
-                                <van-icon @click="Delete_Inventory" name="photo-fail" size="35" />
+                            <div @click="Delete_list(item, index)"
+                                style="height:100%;display: flex;justify-content: center;align-items: center;" class="icon">
+                                <img src="@/assets/img/Profile_Center/chacha.svg" style="width: 35px;height: 35px;" alt="">
                             </div>
                         </template>
                         <!-- 删除按钮 -->
@@ -265,7 +354,42 @@ function map_goods_name(iten, indey) {
             </div>
             <!-- 清单列表 -->
         </div>
-        <!-- 在整个Plan页面是foot -->
+        <van-popup class="popup" v-model:show="show_addGoods_popUp" position="bottom" :style="{ height: '40%' }" round>
+            <div class="inner">
+                <div class="banner">
+                    <div class="left" @click="show_addGoods_popUp = false"><van-icon name="arrow-left" size="22" />
+                    </div>
+                    <div class="middle">
+                        <h2 v-html="text_add_title"></h2>
+                    </div>
+                    <div class=" box submit">
+                        <div class="btn" @click="submit_addGoods">
+                            <van-icon name="success" size="36" />
+                        </div>
+                    </div>
+                </div>
+                <div class="conten">
+                    <div class="box icon">
+                        <img src="picture/2023/02/10/cZkBewG65J3SjHr.png" alt="">
+                        <div class="iright">
+                            <div class="line type">
+                                <span style="font-size: 12px;">金额:</span>
+                                <input v-model="cur_Goods_amount" type="text" placeholder="￥">
+                            </div>
+                            <div class="line category">
+                                <span style="font-size: 12px;">名称:</span>
+                                <input v-model="cur_Goods_name" type="text">
+                            </div>
+                        </div>
+                    </div>
+                    <div class=" box describe">
+                        <input v-model="cur_Goods_describe" type="text"
+                            placeholder="Please describe the item  --  ( optional )">
+                    </div>
+                </div>
+            </div>
+        </van-popup>
+        <!-- 在整个Plan页面中是foot -->
     </div>
     <!-- ref可判断当前组件位置 -->
 </template>
@@ -426,6 +550,136 @@ function map_goods_name(iten, indey) {
                             color: #333;
                             font-weight: 800;
                         }
+                    }
+
+                }
+
+
+            }
+        }
+    }
+
+    .popup {
+        position: absolute;
+        bottom: 0;
+
+        &.webkit-scroll {
+            display: none;
+        }
+
+        .inner {
+            box-sizing: border-box;
+            padding: 10px;
+
+            .banner {
+                display: grid;
+                grid-template-columns: .5fr 2fr 1fr;
+
+                .submit {
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+
+                    .btn {
+                        width: 80px;
+                        height: 40px;
+                        border-radius: 24px;
+                        background-color: rgb(255, 211, 158);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
+                }
+
+                .left {
+                    display: flex;
+                    align-items: center;
+                }
+
+                .middle {
+                    display: flex;
+                    justify-content: center;
+                }
+            }
+
+            .conten {
+                padding: 10px 10px 0 10px;
+
+                .box {
+                    margin-top: 25px;
+                }
+
+                .icon {
+                    display: flex;
+
+                    .iright {
+                        flex: 1;
+                        margin-left: 20px;
+                        display: grid;
+                        grid-template-rows: repeat(2, 1fr);
+                        grid-row-gap: 10px;
+
+                        .line {
+                            position: relative;
+                            width: 250px;
+                            background-color: #bfbfbfAA;
+                            border-radius: 24px;
+                            display: flex;
+                            justify-content: flex-start;
+                            align-items: center;
+
+                            input {
+                                margin-left: 20px;
+                                border: 0;
+                                background-color: #d6d8d8;
+                            }
+
+                            // margin-top   : 10px;
+                            .color {
+                                margin-left: 10px;
+                                color: #1b1b1b;
+                                font-weight: 550;
+                                font-size: 16px;
+                            }
+                        }
+
+                        span {
+                            position: relative;
+                            left: 15px;
+                            color: #6d6d6d // display: block;
+                                // background-color: pink;
+                                // width: 200px;
+                                // margin-top: 8px;
+                                // padding-top: 20px;
+                        }
+                    }
+
+                    img {
+                        background-color: #bfbfbfAA;
+                        border-radius: 50px;
+                        width: 100px;
+                        width: 100px;
+                    }
+                }
+
+                .describe {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+
+                    input {
+                        box-sizing: border-box;
+                        width: 95%;
+                        height: 50px;
+                        padding-left: 20px;
+                        border-radius: 24px;
+                        background-color: #bfbfbfDD;
+                        border: 0;
+                        outline: none;
+                    }
+
+                    ::-webkit-input-placeholder {
+                        font-weight: 400;
                     }
 
                 }
