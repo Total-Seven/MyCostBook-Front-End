@@ -46,7 +46,6 @@ export default function useScroll(elRef) {
             el = elRef.value
         }
         el.addEventListener('scroll', handler)
-        console.log('开始监听滚动', el);
     })
     onUnmounted(() => {
         el.removeEventListener('scroll', handler)

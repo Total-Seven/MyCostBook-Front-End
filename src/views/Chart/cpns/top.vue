@@ -1,11 +1,14 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { toRaw, ref, computed } from 'vue'
+// 组件
+import empty from '@/components/empty.vue';
 // Store
 import useChartStore from '@/stores/modules/chart';
 import { storeToRefs } from 'pinia';
 const chartStore = useChartStore()
 const { data, current_menu, current_tab, current_dateIndex } = storeToRefs(chartStore)
-// 
+//
+
 const date_arr = computed(() => {
     return data.value[current_menu.value][current_tab.value].time  // 后端返回可选择的日期（用户有账单记录的）
 })
@@ -19,6 +22,10 @@ const top_obj = computed(() => {
 const top_array = computed(() => {
     return top_obj.value[current_key.value]
 })
+const isEmpty = computed(() => {
+    if (top_array.value == undefined) return true
+})
+console.log(isEmpty.value);
 // 
 const listData = [
     {
@@ -91,7 +98,7 @@ function getUrl(img) {
 <template>
     <div class="top">
         <div id="title">Top</div>
-        <div id="list">
+        <div id="list" v-if="!isEmpty">
             <template v-for="(item, index) in top_array" :key="index">
                 <div class="item">
                     <div class="left">
@@ -120,6 +127,13 @@ function getUrl(img) {
                     </div>
                 </div>
             </template>
+        </div>
+        <div id="top-empty" v-if="isEmpty">
+            <empty v-if="isEmpty">
+                <template #icon>
+                    <div class="iconfont icon-jiluqueshengshuxing"></div>
+                </template>
+            </empty>
         </div>
     </div>
 </template>
@@ -225,6 +239,13 @@ function getUrl(img) {
                 }
             }
         }
+    }
+
+    #top-empty {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20% 0;
     }
 }
 </style>

@@ -13,12 +13,23 @@ const loginStore = useLoginStore()
 const { books, plan_list, user_info } = storeToRefs(loginStore)
 const router = useRouter()
 //
-if (books.value = {}) {
+if (Object.prototype.toString.call(books.value) == '[object Object]' && Object.keys(books.value).length === 0) {
     const res = await LAxios.get({
         url: '/user/get_userinfo'
     })
     if (res.code == 200) {
-        books.value = res.data.books
+        // 
+        function del_shooping_book(raw_arr) {
+            console.log(raw_arr);
+            const targetIndex = raw_arr.findIndex(el => {
+                return el.name == '购物清单'
+            })
+            return raw_arr.splice(targetIndex - 1, 1)
+        }
+        const new_books = del_shooping_book(res.data.books)
+        console.log(new_books);
+        // 
+        books.value = new_books
         plan_list.value = res.data.plan
         user_info.value.infos.budget = res.data.userInfo.budget
         user_info.value.net = res.data.net
@@ -67,7 +78,7 @@ const click = (bookName, bookId, bookType) => {
     display: flex;
     overflow-x: auto;
     overflow-y: hidden;
-    top: 55px;
+    top: 45px;
     color: #fff;
 
     // justify-content: space-evenly;
@@ -85,10 +96,10 @@ const click = (bookName, bookId, bookType) => {
         // align-items: center;
         flex-shrink: 0;
         // background-color: pink;
-        background-color: #c7bdbd;
-        border-color: #fff;
+        background-color: #cfcfcf;
+        border-color: #cfcfcfAA;
         border-radius: 25% 10% 10% 10%;
-        // box-shadow: inset -1px 10px 8px 5px #fff, 2px 8px 6px 0px rgba(0, 0, 0, 0.3), 1px 9px 15px 5px rgba(0, 0, 0, 0);
+        box-shadow: 0 2px 2px #cfcfcfAA;
         margin-left: 20px;
 
 
@@ -97,7 +108,7 @@ const click = (bookName, bookId, bookType) => {
             padding: 10px;
             font-family: Inter;
             text-align: center;
-            font-size: 14px;
+            font-size: 16px;
             position: relative;
             top: -2px;
         }

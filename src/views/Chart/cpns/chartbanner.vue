@@ -1,20 +1,22 @@
 <script setup>
 import banner from '@/components/banner.vue';
 
+import downloadUrl from '@/assets/img/chart/download-alt 1.svg'
+
 </script>
 
 <template>
     <banner class="banner">
         <!-- <template #left>
-                                                                <img class="left" src="../img/Icon_chevron-left.svg" alt="">
-                                                            </template> -->
+                                                                            <img class="left" src="../img/Icon_chevron-left.svg" alt="">
+                                                                        </template> -->
         <template #left>
             <span style="font-size:28px; line-height:30px; font-weight:800;">Statistics</span>
         </template>
         <template #right>
-            <img class="download" src="../img/download-alt 1.svg" alt="">
+            <img class="download" :src="downloadUrl" alt="">
         </template>
-</banner>
+    </banner>
 </template>
 
 <style lang="less" scoped>

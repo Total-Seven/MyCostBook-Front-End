@@ -57,7 +57,7 @@ const date = computed(() => {
                 </template>
             </banner>
         </div>
-        <div class="content">
+        <div class="content" @touchmove.stop.prevent>
             <div class="top">
                 <div class="icon">
                     <img src="@/assets/img/Profile_Center/Center_avatar.png" alt="">

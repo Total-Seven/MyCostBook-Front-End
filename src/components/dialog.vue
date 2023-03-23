@@ -62,10 +62,10 @@ const emit = defineEmits(['update:amount'])
                     style="width: 50%;height: 40px;background-color: #bfbfbfAA;border:0;outline: none;border-radius: 24px;" />
             </div>
             <!-- <template #title>
-                                                                                                                                                                <div>
-                                                                                                                                                                    <span>{{ title }}</span>
-                                                                                                                                                                </div>
-                                                                                                                                                            </template> -->
+                                                                                                                                                                                <div>
+                                                                                                                                                                                    <span>{{ title }}</span>
+                                                                                                                                                                                </div>
+                                                                                                                                                                            </template> -->
         </van-dialog>
     </div>
 </template>

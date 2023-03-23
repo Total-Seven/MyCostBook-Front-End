@@ -1,7 +1,7 @@
 <template>
     <div class="container" id="container">
         <div :id="id" :option="option" class="echart-container" style="width:350px;height:400px"></div>
-</div>
+    </div>
 </template>
 
 <script setup>

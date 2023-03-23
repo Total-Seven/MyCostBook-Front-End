@@ -52,3 +52,10 @@ export function Del_Goods(id) {
         url: `/inventory/delGoods?id=${id}`,
     })
 }
+
+export function charge(data) {
+    return LAxios.post({
+        url: `/inventory/charge`,
+        data
+    })
+}

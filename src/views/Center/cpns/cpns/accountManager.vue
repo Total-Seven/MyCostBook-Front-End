@@ -1,6 +1,6 @@
 <script setup>
 // Vue
-import { ref, toRaw } from 'vue';
+import { ref, computed, toRaw } from 'vue';
 // 路由
 import { useRouter } from 'vue-router';
 // Util
@@ -69,7 +69,22 @@ const isAllSwipe = ref(false)
 function edit() {
     Ref_SwipeCell.value.open()
     isAllSwipe.value = true
-} 
+}
+
+
+function keepTwoDecimalStr(num) {
+    const result = Number(num.toString().match(/^\d+(?:\.\d{0,2})?/));
+    let s = result.toString();
+    let rs = s.indexOf('.');
+    if (rs < 0) {
+        rs = s.length;
+        s += '.';
+    }
+    while (s.length <= rs + 2) {
+        s += '0';
+    }
+    return Number(s);
+};
 </script>
 
 <template>
@@ -108,7 +123,7 @@ function edit() {
                     <div>Asset Accounts</div>
                 </div>
                 <div class="icon">
-                    <div><img src="picture/2023/02/10/cZkBewG65J3SjHr.png" alt=""></div>
+                    <div><img src="https://s2.loli.net/2023/02/10/cZkBewG65J3SjHr.png" alt=""></div>
                 </div>
             </div>
             <div class="list">
@@ -116,13 +131,13 @@ function edit() {
                     <van-swipe-cell :before-close="beforeClose" name="删除" ref="Ref_SwipeCell" :stop-propagation="true">
                         <div class="item" @click="account_detail(item, index)">
                             <div class="left">
-                                <div><img src="picture/2023/02/10/cZkBewG65J3SjHr.png" alt=""></div>
+                                <div><img src="https://s2.loli.net/2023/02/10/cZkBewG65J3SjHr.png" alt=""></div>
                             </div>
                             <div class="middle">
                                 <div>{{ item.name }}</div>
                             </div>
                             <div class="right">
-                                <div class="amount"><span>-￥{{ item.amount }}</span></div>
+                                <div class="amount"><span>￥{{ item.amount }}</span></div>
                             </div>
                         </div>
                         <template #right class="swipe-button-inner">
@@ -147,7 +162,7 @@ function edit() {
                 </div>
                 <div class="conten">
                     <div class="box icon">
-                        <img src="picture/2023/02/10/cZkBewG65J3SjHr.png" alt="">
+                        <img src="https://s2.loli.net/2023/02/10/cZkBewG65J3SjHr.png" alt="">
                         <div class="iright">
                             <div class="name type">
                                 <input type="text" v-model="subMit_name" placeholder="&ensp; Please enter a category name">

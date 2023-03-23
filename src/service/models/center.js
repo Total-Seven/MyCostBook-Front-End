@@ -32,6 +32,15 @@ export function deleteCategory(data) {
         data,
     })
 }
+export function modifyCategory(data) {
+    return LAxios.post({
+        url: `/category/update`,
+        Headers: {
+            "content-type": "application/x-www-form-urlencoded;charset=UTF-8"
+        },
+        data,
+    })
+}
 export function gerAllAcount() {
     return LAxios.get({
         url: `/account/getAllAccount`,

@@ -1,14 +1,9 @@
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-const router = useRouter()
 
 const isthree = ref(false)
 setTimeout(() => {
     isthree.value = false
-    // router.push({
-    //     path: '/register'
-    // })
 }, 3000)
 </script>
 

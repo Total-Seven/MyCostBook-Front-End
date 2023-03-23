@@ -11,7 +11,9 @@ const router = useRouter()
 
 const useLoginStore = defineStore('login', {
     state: () => ({
-
+        // 
+        isShowPlaneLoading: false,
+        // 
         submit_login: {},
         token: '',
         isShowanimation: false,
@@ -41,9 +43,18 @@ const useLoginStore = defineStore('login', {
             return new Promise(async (resolve, reject) => {
                 this.isShowanimation = true
                 const res = await loginOrRegister('login', this.submit_login)
-                if (res) {
-                    this.user_info.infos = res.data.userInfo
-                    this.books = res.data.books
+                if (res.code == 200) {
+                    this.user_info.infos = res.data.userInfo   // ❌❌❌
+                    function del_shooping_book(raw_arr) {
+                        console.log(raw_arr);
+                        const targetIndex = raw_arr.findIndex(el => {
+                            return el.name == '购物清单'
+                        })
+                        return raw_arr.splice(targetIndex - 1, 1)
+                    }
+                    this.books = del_shooping_book(res.data.books)
+                    // this.books = res.data.books
+                    console.warn(res.data.books);
                     this.category_list = res.data.category_list
                     this.all_cg = res.data.all_cg
                     this.plan_list = res.data.plan

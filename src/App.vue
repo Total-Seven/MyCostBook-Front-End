@@ -1,19 +1,26 @@
 <script setup>
-import {  RouterView } from 'vue-router'
-import { useRoute, useRouter } from 'vue-router';
-import login from '@/components/welcome.vue'
 import tabbar from './components/tabbar.vue';
+import Plane from './components/Plane.vue';
+
+import { RouterView, useRoute } from 'vue-router'
+
+// Store
+import useLoginStore from '@/stores/modules/login'
+import { storeToRefs } from 'pinia';
+const loginStore = useLoginStore()
+const { isShowPlaneLoading } = storeToRefs(loginStore)
+// 路由
 const route = useRoute();
 </script>
 
 <template>
   <div class="app">
-    <login />
+    <Plane v-if="isShowPlaneLoading" />
     <RouterView v-slot="{ Component }">
-      <KeepAlive>
-        <component :is="Component" :key="$route.name" v-if="$route.meta.KeepAlive" />
-      </KeepAlive>
-      <component :is="Component" v-if="!$route.meta.KeepAlive" />
+      <!-- <KeepAlive> -->
+      <!-- <component :is="Component" :key="$route.name" v-if="$route.meta.KeepAlive" /> -->
+      <!-- </KeepAlive> -->
+      <component :is="Component" />
     </RouterView>
     <!--  -->
     <tabbar class="tabbar" v-if="!route.meta.is_hidden_tabbar" />

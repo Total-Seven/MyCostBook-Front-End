@@ -1,6 +1,8 @@
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+// Gzip
+import viteCompression from 'vite-plugin-compression'
 // Vant
 import Components from 'unplugin-vue-components/vite'
 import { VantResolver } from 'unplugin-vue-components/resolvers'
@@ -12,7 +14,9 @@ export default defineConfig({
     Components({
       resolvers: [VantResolver()],
     }),
-
+    viteCompression({
+      threshold: 1024000 // 对大于 1mb 的文件进行压缩 需要更改大小可以自己进行换算
+    }),
   ],
   define: {
     'process.env': {},
@@ -28,8 +32,13 @@ export default defineConfig({
   server: {
     // 代理
     proxy: {
+      // '/rabbit': {
+      //   target: 'http://127.0.0.1:7001/api',
+      //   changeOrigin: true,
+      //   rewrite: (path) => path.replace(/^\/rabbit/, '')
+      // },
       '/rabbit': {
-        target: 'http://127.0.0.1:7001/api',
+        target: 'http://47.102.117.116:7001/api',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/rabbit/, '')
       },

@@ -13,7 +13,6 @@ const avalist = [
     { ava: '3.svg' },
     { ava: '4.svg' },
     { ava: '5.svg' },
-
 ]
 function getUrl(img) {
     return new URL(`../../../../assets/img/cost/list/avatar/${img}`, import.meta.url).href
@@ -38,7 +37,7 @@ const close = () => {
                 </div>
             </template>
         </div>
-</div>
+    </div>
 </template>
 
 <style lang="less" scoped>

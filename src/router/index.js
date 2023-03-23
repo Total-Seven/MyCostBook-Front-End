@@ -13,15 +13,18 @@ import dayjs from 'dayjs'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    // /
     {
       path: '/',
       redirect: '/register',
     },
+    // loading
     {
       path: '/loading',
       name: '加载中',
       component: () => import('@/components/loading.vue')
     },
+    // register
     {
       path: '/register',
       name: '注册',
@@ -31,6 +34,7 @@ const router = createRouter({
         index: 0
       }
     },
+    // login
     {
       path: '/login',
       name: '登入',
@@ -40,6 +44,7 @@ const router = createRouter({
         index: 0
       }
     },
+    // home
     {
       path: '/home',
       name: '首页',
@@ -50,6 +55,7 @@ const router = createRouter({
         index: 1
       },
     },
+    // cost
     {
       path: '/cost:bookname',
       name: '记账',
@@ -72,20 +78,21 @@ const router = createRouter({
           tabBar.value[2].style.left = to.meta.left
         },
       },
-      beforeEnter(to, from, next) {
-        // const costStore = useCostStore()
-        // let data = {}
-        const tabBarStore = useTabBarStore()
-        to.meta.changeTabBar(tabBarStore, to)
-        next()
-        // costStore.get_bill_list(to.params.bookname.replace(':', ''), dayjs().subtract(1, 'month').format('YYYY-MM'), 1).then(res => {
-        //   console.log(res.data);
-        //   data = res.data
-        //   next()
-        // })
-      }
+      // beforeEnter(to, from, next) {
+      //   // const costStore = useCostStore()
+      //   // let data = {}
+      //   const tabBarStore = useTabBarStore()
+      //   to.meta.changeTabBar(tabBarStore, to)
+      //   next()
+      //   // costStore.get_bill_list(to.params.bookname.replace(':', ''), dayjs().subtract(1, 'month').format('YYYY-MM'), 1).then(res => {
+      //   //   console.log(res.data);
+      //   //   data = res.data
+      //   //   next()
+      //   // })
+      // }
 
     },
+    // detail
     {
       path: '/detail:id',
       name: '详情',
@@ -101,10 +108,11 @@ const router = createRouter({
         next()
       }
     },
+    // chart
     {
       path: '/Chart',
       name: '图表',
-      component: () => import('@/views/Chart/index.vue')
+      component: () => import('@/views/Chart/chart.vue')
       ,
       meta: {
         is_hidden_tabbar: false,
@@ -116,10 +124,11 @@ const router = createRouter({
         if (res) next()
       }
     },
+    // plan
     {
       path: '/Plan',
       name: '金库',
-      component: () => import('@/views/Plan/index.vue'),
+      component: () => import('@/views/Plan/plan.vue'),
       meta: {
         is_hidden_tabbar: false,
         index: 3
@@ -134,6 +143,7 @@ const router = createRouter({
         next()
       }
     },
+    // plan_detail
     {
       path: '/plan_detail',
       name: '计划详情',
@@ -153,10 +163,11 @@ const router = createRouter({
       //   // next()
       // }
     },
+    // center
     {
-      path: '/Center',
-      name: '用户中心',
-      component: () => import('@/views/Center/index.vue'),
+      path: '/center',
+      name: '中心',
+      component: () => import('@/views/Center/center.vue'),
       meta: {
         is_hidden_tabbar: false,
         index: 4
@@ -193,22 +204,32 @@ const router = createRouter({
           }
         },
       ]
+    },
+    // test
+    {
+      path: '/test',
+      name: '用户中心',
+      component: () => import('@/views/test/test.vue'),
+      meta: {
+        is_hidden_tabbar: true,
+        index: 4
+      },
     }
   ]
 })
 
 // 这是普通保安👇
 router.beforeEach(async (to, from) => {
-  // console.group('router')
-  // console.warn('to.fullPath:', to.fullPath);            // /chart
-  // console.warn('to.hash:', to.hash);                    // 
-  // console.warn('to matched:', to.matched);              // [{path,redirect,name,,meta,components,children,aliasOf,beforeEnter,enterCallbacks}]
-  // console.warn('to.meta:', to.meta);                    // {is_hidden_tabbar: false, index: 2}
-  // console.warn('to.name:', to.name);                    // 图表
-  // console.warn('to.params:', to.params);                // {}
-  // console.warn('to.path:', to.path);                    // /chart
-  // console.warn('to.redirectedFrom:', to.redirectedFrom);// undefined
-  // console.groupEnd('router')
+  /*   console.group('router')
+    console.warn('to.fullPath:', to.fullPath);            // /chart
+    console.warn('to.hash:', to.hash);                    // 
+    console.warn('to matched:', to.matched);              // [{path,redirect,name,,meta,components,children,aliasOf,beforeEnter,enterCallbacks}]
+    console.warn('to.meta:', to.meta);                    // {is_hidden_tabbar: false, index: 2}
+    console.warn('to.name:', to.name);                    // 图表
+    console.warn('to.params:', to.params);                // {}
+    console.warn('to.path:', to.path);                    // /chart
+    console.warn('to.redirectedFrom:', to.redirectedFrom);// undefined
+    console.groupEnd('router') */
 
   // 有点像生命周期哈？在导航生效之前，执行的异步操作。
   // return false

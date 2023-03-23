@@ -28,6 +28,15 @@ export function add_bill(data) {
         data,
     })
 }
+export function transform(data) {
+    return LAxios.post({
+        url: `/bill/transform`,
+        Headers: {
+            "content-type": "application/x-www-form-urlencoded;charset=UTF-8"
+        },
+        data,
+    })
+}
 export function create_plan(data) {
     return LAxios.post({
         url: `/plan/add`,

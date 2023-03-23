@@ -5,12 +5,15 @@ import { createURLObj } from '@/utils';
 import { useRouter } from 'vue-router';
 // 
 import dayjs from 'dayjs';
-import { ref, computed, toRaw } from 'vue';
-
+import { ref, watch, computed, toRaw, onMounted, onUnmounted } from 'vue';
+// Vant
+import { showNotify } from 'vant';
+import 'vant/es/notify/style'
+// 
 import useCostStore from '@/stores/modules/cost'     //Cost
 import { storeToRefs } from 'pinia';
 const costStore = useCostStore()
-const { del_bill_info } = storeToRefs(costStore)
+const { obj, del_bill_info, reach150 } = storeToRefs(costStore)
 // import { resolveBaseUrl } from 'vite';
 // 
 const router = useRouter()
@@ -20,12 +23,31 @@ const props = defineProps({
         type: Object,
         default: () => { }
     },
-    title_style: {
-        type: Object,
-        default: () => { }
+    reach150: {
+        type: Boolean,
+        default: false
+    },
+    testt: {
+        type: Boolean,
+        default: false
     }
 })
 const emit = defineEmits(['changeMonth'])
+
+// 保留两位小数
+function keepTwoDecimalStr(num) {
+    const result = Number(num.toString().match(/^\d+(?:\.\d{0,2})?/));
+    let s = result.toString();
+    let rs = s.indexOf('.');
+    if (rs < 0) {
+        rs = s.length;
+        s += '.';
+    }
+    while (s.length <= rs + 2) {
+        s += '0';
+    }
+    return Number(s);
+};
 // const list = [
 //     { icon: 'bangzhushouce.svg', name: 'Upwork', amount: '850.00', date: 'Today', style: { color: 'red' } },
 //     { icon: 'gongwenbao.svg', name: 'Transfer', amount: '85.00', date: 'Yesterday', style: { color: 'green' } },
@@ -41,6 +63,20 @@ const emit = defineEmits(['changeMonth'])
 // ]
 const showPickDate = ref(false)
 const currentDate = ref([dayjs().format('YYYY'), dayjs().format('MM')])
+/** */
+const left = ref({
+    color: '#222',
+    'font-size': '16px',
+    transition: 'all .5s ease-out',
+
+})
+watch(reach150, (newV) => {
+    !newV ? left.value.color = '#222' : left.value.color = '#2e7e79'
+})
+watch(() => props.testt, (newV) => {
+    console.log(newV);
+})
+
 function getUrl(img) {
     return new URL(`../../../../assets/img/cost/list/other/${img}`, import.meta.url).href
 }
@@ -60,8 +96,9 @@ function clickItem(item, value) {
     })
 }
 
-// 
-const titleText = ref('This Month Transactions')
+//
+const titleText = ref(`This Month Transactions`)
+
 function confirms(value,) {
     const year = value.selectedValues[0]
     const month = value.selectedValues[1]
@@ -79,34 +116,33 @@ function confirms(value,) {
     titleText.value = `${year}-${month} Transactions`
     showPickDate.value = false
 }
-let isClickDel = ref(false)
-function beforeClose({ position }) {
-    switch (position) {
-        case 'right': {
-            if (isClickDel == true) {
-                return new Promise((resolve, reject) => {
-                    console.log('点击删除后关闭');
-                    isClickDel.value = false
-                    return true
-                })
-            }
-        }
-    }
-}
 function del_bill(value, item) {
-    isClickDel = true
-    console.log('del:', toRaw(item), 'in=>', toRaw(value.bills));
+    console.group('开始删除');
+    console.log('删除项:', toRaw(item));
+    console.log('删除数组:', toRaw(value.bills));
     // 发送网络请求，
     del_bill_info.value = createURLObj({ id: item.id })
     // 返回200
     costStore.post_del_bill().then(data => {
         console.log(data);
         const targetIndex = value.bills.findIndex(el => {
-            el.id == item.id
+            return el.id == item.id
         })
+        console.log('targetIndex', targetIndex, value.bills[targetIndex], toRaw(value.bills));
         // 删除数据
+        if (item.pay_type == 1) {
+            obj.value.total_income -= keepTwoDecimalStr(value.bills[targetIndex].amount)    //修改总金额
+        }
+        else if (item.pay_type == 2) {
+            obj.value.total_expense += keepTwoDecimalStr(value.bills[targetIndex].amount)    //修改总金额
+        }
         value.bills.splice(targetIndex, 1)
+        setTimeout(() => { showNotify({ type: 'success', message: '删除成功' }); }, 500);
+        console.groupEnd('开始删除');
     })
+        .catch(error => {
+            console.warn(error);
+        })
 }
 const red_style = { color: '#ff5b5b' }
 const green_style = { color: '#52a3a1' }
@@ -114,6 +150,9 @@ function set_style(type) {
     if (type == 2) return red_style
     if (type == 1) return green_style
 }
+
+
+
 </script>
 
 <template>
@@ -123,11 +162,13 @@ function set_style(type) {
             @cancel="showPickDate = false" />
     </van-popup>
     <div class="list">
-        <div class="title" @click="showPickDate = true" :class="title_style">
+        <div class="title" @click="showPickDate = true" ref="Ref_title">
             <div class="titleInner">
-                <div class="left">
+                <!-- 列表标题 -- 月份 -->
+                <div :style="left">
                     <h3 v-html="titleText"></h3>
                 </div>
+                <!-- 选择月份 -->
                 <div class="right"><span>See More</span></div>
             </div>
         </div>
@@ -135,16 +176,16 @@ function set_style(type) {
             <template v-for="(value, key, index) in list" :key="index">
                 <div class="item">
                     <h3>{{ value.date }}</h3>
-                    <template v-for="(item, index) in value.bills" :key="index">
-                        <van-swipe-cell :before-close="beforeClose">
+                    <template v-for="(item, indey) in value.bills" :key="indey">
+                        <van-swipe-cell>
                             <template #left>
-                                <van-button square type="primary" text="标记" class="delete-button-left" />
+                                <van-button square type=" primary" text="标记" class="delete-button-left" />
                             </template>
                             <div class="iten" @click="clickItem(item, value)">
                                 <div class="left">
                                     <div class="picture">
                                         <!-- <img src="../../../../assets/img/cost/list/airbnb.svg" alt=""
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            style="display: block;width: 44px;height:40px"> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        style="display: block;width: 44px;height:40px"> -->
                                         <img src="@/assets/img/cost/list/other/jinggao.svg" alt=""
                                             style="display: block;width: 35px;height:35px">
                                         <!-- <img :src="getUrl(item.icon)" alt="" style="display: block;width: 35px;height:35px"> -->
@@ -204,13 +245,7 @@ function set_style(type) {
         .titleInner {
             display: flex;
             justify-content: space-between;
-            // padding: 5px;
             box-sizing: border-box;
-
-            .left {
-                color: #222;
-                font-size: 16px;
-            }
 
             .right {
                 color: #666666;

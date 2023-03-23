@@ -21,6 +21,7 @@ const { update_plan_info } = storeToRefs(costStore)
 const route = useRoute()
 const router = useRouter(0)
 const Deposited = ref(Number(route.query.saved_money))
+const total = ref(Number(route.query.target_money))
 /**
 * function
 */
@@ -52,26 +53,18 @@ for (let index = 0; index < detail_arr.value.length; index++) {
 }
 // 点击事件 翻页 加钱
 function clickItem(item, index, $event) {
-
     console.log(item.active);  //undefined false
-    const add_obj = { id: route.query.id, daily_money: route.query.daily_money, mode: 1 }
-    const sub_obj = { id: route.query.id, daily_money: route.query.daily_money, mode: 2 }
 
-    if (item.active == undefined || item.active == false) {
-        /**
-        * 发送网络请求：id(route.query.id)、daily_money (route.query.daily_money)
-        * return 200
-        * 手动修改active   ()
-        */
-        update_plan_info.value = createURLObj(add_obj)
+    function sendUpdate(mode) {
+        if (!mode) return
+        update_plan_info.value = createURLObj({ id: route.query.id, daily_money: route.query.daily_money, mode: mode })
         costStore.Update_plan()
             .then(data => {
                 // 修改总金额
-                console.log(Deposited.value);
-                Deposited.value += Number(route.query.daily_money)
-                console.log(Deposited.value);
+                if (mode == 1) Deposited.value += Number(route.query.daily_money)
+                else if (mode == 2) Deposited.value -= Number(route.query.daily_money)
+                else throw Error('翻页出错了')
                 // 修改总金额 End
-                console.log(data);
                 showSuccessToast('成功')
                 item.active == true ? item.active = false : item.active = true
             })
@@ -79,30 +72,12 @@ function clickItem(item, index, $event) {
                 showFailToast('失败')
             })
     }
-    else if (item.active == true) {
-        // true
-        /**
-         * 发送网络请求：id(route.query.id)、daily_money (route.query.daily_money)
-         * return 200
-         * 手动修改active   ()
-         */
-        update_plan_info.value = createURLObj(sub_obj)
-        costStore.Update_plan().then(data => {
-            // 修改总金额
-            console.log(Deposited.value);
-            Deposited.value -= Number(route.query.daily_money)
-            console.log(Deposited.value);
-            // 修改总金额 End
-            console.log(data);
-            showSuccessToast('成功')
-            item.active == true ? item.active = false : item.active = true
-        }).catch(() => {
-            showFailToast('失败')
-        })
+    if (item.active == undefined || item.active == false) {
+        sendUpdate(1)
     }
-    // finally  
-
-
+    else if (item.active == true) {
+        sendUpdate(2)
+    }
 }
 //保留两位小数
 function keepTwoDecimalStr(num) {
@@ -118,15 +93,15 @@ function keepTwoDecimalStr(num) {
     }
     return Number(s);
 };
-console.log();
-const persentage = computed(() => {
-    return keepTwoDecimalStr(route.query.saved_money / route.query.target_money)
+const persentage = computed({
+    get() {
+        return keepTwoDecimalStr(Deposited.value / total.value)
+    },
 })
 </script>   
 
 <template>
     <div class="plan_detail">
-        <!-- <h2>{{ route.query }}</h2> -->
         <div class="topBar">
             <div class="icon"><van-icon @click="router.back()" name="arrow-left" size="24" /></div>
             <div class="headline">Plan Detail</div>
@@ -135,7 +110,6 @@ const persentage = computed(() => {
             <div class="info">
                 <div class="icon">
                     <img src="@/assets/img/home/SavePlan/letterBook.svg" alt="">
-
                 </div>
                 <div class="_info">
                     <div class="name">{{ route.query.name }}</div>
@@ -259,6 +233,7 @@ const persentage = computed(() => {
     width: 100vw;
     height: 100vh;
     background-color: #fff;
+    overflow-y: hidden;
 
     .topBar {
         display: grid;
@@ -361,7 +336,7 @@ const persentage = computed(() => {
         margin-top: 20px;
         width: 100%;
         height: 20px;
-        border: 4px solid #d5d5d5aa;
+        border-bottom: .7vw solid #d5d5d5aa;
         border-radius: 12px;
     }
 
@@ -386,6 +361,7 @@ const persentage = computed(() => {
         margin-top: 25px;
         padding-bottom: 50px;
         display: grid;
+        overflow-y: auto;
         grid-template-columns: repeat(2, 1fr);
         grid-template-rows: repeat(autp-fill 1fr);
         grid-gap: 20px 20px;

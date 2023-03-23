@@ -1,16 +1,17 @@
 import { defineStore } from "pinia";
-import { setBudget, getUserBudget, create_ShoppingList, all_inventory, del_inventory, Add_Goods, Del_Goods } from "@/service";
+import { setBudget, getUserBudget, create_ShoppingList, all_inventory, del_inventory, Add_Goods, Del_Goods, charge } from "@/service";
 
 const store = {
     state() {
         return {
             userinfo: {},
             set_budget_info: {},
-            shopping_list: [
-                { isShow: false, name: '清单一', total: 888.00, icon: "", goods_list: [{ name: '臭袜子', amount: 88, checked: false }, { name: '钵钵鸡', amount: 88, checked: false }, { name: '旅游', amount: 88, checked: false }, { name: '+', amount: 88, checked: false, isAddBtn: true }] },
-                { isShow: false, name: '清单二', total: 777.00, icon: "", goods_list: [{ name: '吃火锅', amount: 77, checked: false }, { name: 'DUnk', amount: 88, checked: false }, { name: '+', amount: 88, checked: false, isAddBtn: true }] },
-                { isShow: false, name: '清单三', total: 666.00, icon: "", goods_list: [{ name: '衣服', amount: 66, checked: false }, { name: '+', amount: 88, checked: false, isAddBtn: true }] }
-            ],
+            // shopping_list: [
+            //     { isShow: false, name: '清单一', total: 888.00, icon: "", goods_list: [{ name: '臭袜子', amount: 88, checked: false }, { name: '钵钵鸡', amount: 88, checked: false }, { name: '旅游', amount: 88, checked: false }, { name: '+', amount: 88, checked: false, isAddBtn: true }] },
+            //     { isShow: false, name: '清单二', total: 777.00, icon: "", goods_list: [{ name: '吃火锅', amount: 77, checked: false }, { name: 'DUnk', amount: 88, checked: false }, { name: '+', amount: 88, checked: false, isAddBtn: true }] },
+            //     { isShow: false, name: '清单三', total: 666.00, icon: "", goods_list: [{ name: '衣服', amount: 66, checked: false }, { name: '+', amount: 88, checked: false, isAddBtn: true }] }
+            // ],
+            shopping_list: [],
             create_ShoppingList_info: {},
             delete_ShoppingList_info: {},
             add_goods_info: {},
@@ -189,6 +190,28 @@ const store = {
                 }
                 else {
                     console.log('Del_Goods失败');
+                }
+            })
+        },
+        async Post_charge(charge_infos) {
+            console.group('charge,发送网络请求');
+            console.log(charge_infos);
+            console.log('...正在加载');
+            return new Promise(async (resolve, reject) => {
+                console.time('charge')
+                const res = await charge(charge_infos)
+                console.log(res);
+                if (res) {
+                    if (res.code === 200) {
+                        console.log('200', res.data);
+                        resolve(res.data)
+                        console.log('!!!,请求成功🔥');
+                        console.timeEnd('charge')
+                        console.groupEnd('charge,发送网络请求');
+                    }
+                }
+                else {
+                    console.log('charge失败', res);
                 }
             })
         },

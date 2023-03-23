@@ -1,59 +1,125 @@
 <script setup>
 // 响应式
-import { ref, toRaw, computed, onMounted, watch } from 'vue'
+import { ref, toRaw, computed, watch } from 'vue'
 // Until
-import getRefGroup from '@/utils/getRefGroup'
 import { createURLObj } from '@/utils/URLSearchParams';
+// 组件
+import mydialog from '@/components/dialog.vue'
+// Vant
+import { showNotify } from 'vant';
+import 'vant/es/notify/style'
 // Store
 import useCenterStore from '@/stores/modules/center';
 import { storeToRefs } from 'pinia';
 const centerStore = useCenterStore()
 const { isClicktoEdit, add_category_info, delete_category_info } = storeToRefs(centerStore)
+// Emit
+const emit = defineEmits(['notify:itenAmount'])
 // Props
 const props = defineProps({
     types: {
         type: Array,
         default: () => []
     },
+    current_index: {
+        type: Number,
+        default: 0
+    }
 })
+props.types[0].hide = false // 默认第一项是展开的
+
 let newArr = computed(() => props.types)
 // 创建数组并赋值
-const { group, handle } = getRefGroup()
 
 const click = (el, item, index, hide) => {
-    console.log('isClicktitle', group[index], el.target);
-    const current_hide = group[index].getAttribute('hide')  // 点击获取元素实例
-    newArr.value[index].hide = current_hide == 'false' ? true : false   // 改变显示属性
+    newArr.value[index].hide == false ? newArr.value[index].hide = true : newArr.value[index].hide = false   // 改变显示属性
 }
-
-onMounted(() => {
-    console.log('onMouted');
-    props.types[0].hide = false // 默认第一项是展开的
+//保留两位小数
+function keepTwoDecimalStr(num) {
+    const result = Number(num.toString().match(/^\d+(?:\.\d{0,2})?/));
+    let s = result.toString();
+    let rs = s.indexOf('.');
+    if (rs < 0) {
+        rs = s.length;
+        s += '.';
+    }
+    while (s.length <= rs + 2) {
+        s += '0';
+    }
+    return Number(s);
+};
+/**
+ * 一级分类 右侧的金额
+ */
+const TypeName = computed(() => {
+    if (props.current_index == 0) return 'spend'
+    if (props.current_index == 1) return 'income'
 })
-watch(newArr.value, (newV) => {
-    console.log('watch:newArr');
-}, { deep: true })
-// 点击添加分类
+watch(() => TypeName.value, (newV) => {
+    console.warn(newV);
+})
+/**
+ * 分类
+ */
 const showPopUpBottom = ref()
-// 记录表单信息
+// 
+const dialogTitle = ref('修改类别名')
+const isShow_modifyDiaglog = ref(false)
+const default_placeholder = ref('')
+const newCategoryName = ref('')
+/**
+ * 记录表单信息
+ */
 const type = ref()              // 消费类型的数字
 const type_name = ref('')       // 消费类型的名字
 const first_type_name = ref('') // 一级分类的名字
 const first_type_id = ref() // 一级分类的名字
 const subMit_name = ref()      // 表单提交的name
-const clickIten = (item, $event) => {
-    console.log(item);
-    if ($event.target.innerText != '+') return   //textContent
-    // 弹出popUp
-    showPopUpBottom.value = true
-    // 
-    type.value = item.type
-    type_name.value = item.type == 1 ? 'Expend' : 'Income'
-    first_type_name.value = item.name
-    first_type_id.value = item.id
+let closeFn = (status, firstType_index, category_id, newValue) => { }
+const clickIten = (item, iten, index, indey, $event) => {
+    if (!isClicktoEdit.value) {
+        emit('notify:itenAmount', `${iten.name} : $${iten.amount}`)
+        return
+    }
+    if ($event.target.innerText != '+') {   //textContent
+        default_placeholder.value = iten.name
+        isShow_modifyDiaglog.value = true
+        closeFn = (status, newValue = newCategoryName.value, firstType_index = index, category_index = indey, category_id) => {
+            if (status === 'cancel') { isShow_modifyDiaglog.value = false }
+            else if (status === 'confirm') {
+                const modify_categoryName = createURLObj({ id: category_id, name: newValue })
+                // 网络请求
+                centerStore.Post_Modify_CategoryName(modify_categoryName).then(() => {
+                    props.types[firstType_index].list[category_index].name = newValue
+                    isShow_modifyDiaglog.value = false
+                    showNotify({ type: 'success', message: '修改成功' });
+                }).catch((error) => {
+                    throw error
+                })
+            }
+        }
+        console.log(item, index, iten, closeFn);
+    }
+    else if ($event.target.innerText == '+') {
+        // 弹出popUp
+        showPopUpBottom.value = true
+        // 
+        type.value = item.type
+        type_name.value = item.type == 1 ? 'Expend' : 'Income'
+        first_type_name.value = item.name
+        first_type_id.value = item.id
+    }
 }
-// 提交
-const isInputShark = ref(false)
+// 关闭对话框（修改类别名）
+function Close(status) {
+    closeFn(status)
+}
+function updateAmount(newV) {
+    newCategoryName.value = newV
+}
+/**
+ * 提交
+ */
 const submit = () => {
     if (subMit_name.value == undefined) {
         isInputShark.value = true
@@ -66,16 +132,17 @@ const submit = () => {
     centerStore.Post_addCategory(first_type_id.value, type_name.value)
     showPopUpBottom.value = false
 }
-// 删除
-const del_category = (iten) => {
+
+
+
+/**
+ * 删除类别
+ */
+const isInputShark = ref(false)
+const del_category = (iten, item) => {
     delete_category_info.value = createURLObj({ id: iten.id })
-    centerStore.Post_deleteCategory(iten.id)
+    centerStore.Post_deleteCategory(iten.id, item.id)
 }
-
-
-props.types.forEach(item => {
-    console.log(toRaw(item.list));
-})
 </script>
 
 <template>
@@ -83,9 +150,9 @@ props.types.forEach(item => {
         <div class="innerItem">
             <template v-for="(item, index) in types" :key="index">
                 <div class="item">
-                    <div class="title" :ref="handle" @click="click($event, item, index, hide)" :hide="item.hide">
+                    <div class="title" @click="click($event, item, index, hide)" :hide="item.hide">
                         <div class="left">
-                            <div><img src="picture/2023/02/10/cZkBewG65J3SjHr.png" alt=""
+                            <div><img src="https://s2.loli.net/2023/02/10/cZkBewG65J3SjHr.png" alt=""
                                     :class="{ imgshark: isClicktoEdit && item.hide == false }">
                             </div>
                         </div>
@@ -93,16 +160,15 @@ props.types.forEach(item => {
                             {{ item.name }}
                         </div>
                         <div class="right">
-                            <span>spend￥0 &ensp; income￥0</span>
+                            <span>{{ TypeName }}￥{{ keepTwoDecimalStr(item.amount) }}</span>
                         </div>
                     </div>
                     <div class="list" v-if="!item.hide" :class="{ animationIn: !item.hide }">
                         <template v-for="(iten, indey) in item?.list">
-                            <div class="innerIten">
-                                <div class="iten" @click="clickIten(item, $event)"
-                                    :class="{ imgshark: isClicktoEdit && item.id !== 0 }">
+                            <div class="innerIten" @click="clickIten(item, iten, index, indey, $event)">
+                                <div class="iten" :class="{ imgshark: isClicktoEdit && item.id !== 0 }">
                                     <img v-if="isClicktoEdit && iten.id !== 0" src="@/assets/img/Profile_Center/chacha.svg"
-                                        alt="" @click="del_category(iten)">
+                                        alt="" @click.stop="del_category(iten, item)">
                                     <span>{{ iten?.name }}</span>
                                 </div>
                             </div>
@@ -123,7 +189,7 @@ props.types.forEach(item => {
                 </div>
                 <div class="conten">
                     <div class="box icon">
-                        <img src="picture/2023/02/10/cZkBewG65J3SjHr.png" alt="">
+                        <img src="https://s2.loli.net/2023/02/10/cZkBewG65J3SjHr.png" alt="">
                         <div class="iright">
                             <div class="line type"><span style="font-size: 12px;">类型:</span><span class="color">{{ type_name
                             }}</span></div>
@@ -145,8 +211,10 @@ props.types.forEach(item => {
             </div>
         </van-popup>
         <div class="footer">
-            <span>Add your Category</span>
+            <span> Types & Categories</span>
         </div>
+        <mydialog @update:amount="updateAmount" :title="dialogTitle" :show="isShow_modifyDiaglog"
+            :default_placeholder="default_placeholder" :Close="Close" />
     </div>
 </template>
 

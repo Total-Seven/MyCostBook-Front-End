@@ -13,19 +13,22 @@ defineProps({
             <div>Surplus</div>
             <span>￥{{ total_infos.surplus.net }}</span>
         </div>
-        <div class="info save"><span>SaveMoney</span><span>￥{{ total_infos.SaveMoney }}</span></div>
-        <div class="info budget"><span>Budget</span><span> ￥{{ total_infos.budget }}</span></div>
+        <div class="info save"><span style="font-size: 16px;">SaveMoney</span><span style="font-weight: 600;">￥{{
+            total_infos.SaveMoney }}</span>
+        </div>
+        <div class="info budget"><span style="font-size: 16px;">Budget</span><span style="font-weight: 600;"> ￥{{
+            total_infos.budget }}</span></div>
     </div>
 </template>
 
 <style lang="less" scoped>
 .infos {
     position: relative;
-    top: 30px;
+    top: 10px;
     z-index: 2;
     width: 150px;
     margin-left: 20px;
-    font-size: 16px;
+    font-size: 18px;
     line-height: 26px;
 
     .info {
@@ -33,9 +36,11 @@ defineProps({
     }
 
     .surplus {
+        font-size: 20px;
+        line-height: 30px;
+
         span {
-            // margin-top: 22px;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 800;
         }
     }

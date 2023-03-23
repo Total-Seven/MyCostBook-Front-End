@@ -1,17 +1,26 @@
 <script setup>
 // Vue
 import { ref, toRaw, computed } from 'vue'
-// 
+// 组件
+import empty from '@/components/empty.vue';
+// HighCharts
 import Highcahrts from 'highcharts'
 // Store
 import useChartStore from '@/stores/modules/chart';
 import { storeToRefs } from 'pinia';
 const chartStore = useChartStore()
 const { data, current_tab, current_menu } = storeToRefs(chartStore)
-// 
+//
+
+
 const line_array = computed(() => {
     return data.value[current_menu.value][current_tab.value].line_array
 })
+
+const isEmpty = computed(() => {
+    if (line_array.value.length == 0 && Object.prototype.toString.call(line_array.value) == '[object Array]') return true
+})
+console.log('isEmpty:', isEmpty.value);
 
 const categories = computed(() => {
     return data.value[current_menu.value][current_tab.value].time
@@ -156,15 +165,33 @@ const chartOptions = computed(() => ({
 
 <template>
     <div class="chart">
-        <highcharts :options="chartOptions" style="width:380px;height:200px"></highcharts>
+        <highcharts v-if="!isEmpty" :options="chartOptions" style="width:380px;height:200px"></highcharts>
+        <div v-else-if="isEmpty" class="lineChart-empty">
+            <empty>
+                <template #icon>
+                    <div class="iconfont icon-queshengye_zanwudongtai"></div>
+                </template>
+            </empty>
+        </div>
     </div>
 </template>
 
 <style lang="less" scoped>
 .chart {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
     margin-top: 20px;
+    width: 400px;
+    height: 200px;
+
+    .lineChart-empty {
+        width: 200px;
+        height: 200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 }
 </style>

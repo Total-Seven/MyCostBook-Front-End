@@ -15,7 +15,7 @@ const centerStore = useCenterStore()
 const { user_info,
     add_book_info,
     del_book_info,
-    update_book_info, } = storeToRefs(centerStore)
+    update_book_info, user_default_book_id } = storeToRefs(centerStore)
 // 
 const router = useRouter()
 
@@ -32,6 +32,18 @@ const props = defineProps({
 const data = computed(() => {
     return props.test
 })
+function del_shooping_book(raw_arr) {
+    console.log(raw_arr);
+    const targetIndex = raw_arr.findIndex(el => {
+        return el.name == '购物清单'
+    })
+    console.warn(targetIndex);
+    if (targetIndex !== -1 && targetIndex !== 0) {
+        raw_arr.splice(targetIndex, 1)
+    }
+    return true
+}
+del_shooping_book(data.value)
 /**
  * 点击编辑，修改状态，实现动画
  **/
@@ -39,19 +51,37 @@ const isimgshark = ref(false)
 const isClickEdit = () => {
     isimgshark.value == true ? isimgshark.value = false : isimgshark.value = true
 }
+
+/**
+ * detail 
+ */
+const showdetail = ref(false)
+const current_clickBook_name = ref('')
+const current_clickBook_total = ref({})
+const current_clickBook_month = ref({})
+
+
 /**
  * 点击提交表单
  */
 const default_placeholder = ref('')
-const update = (id, name) => {
-    default_placeholder.value = name
-    // 屏蔽编辑状态以外的点击
-    if (isimgshark.value == false) return
+const update = (id, name, item) => {
+    // 编辑状态以外的点击
+    if (isimgshark.value == false) {
+        current_clickBook_name.value = name
+        current_clickBook_total.value = item.total
+        current_clickBook_month.value = item.moneth
+        showdetail.value = true
+        return
+    }
     // 
+    default_placeholder.value = name
     subMit_id.value = id
     showDialog.value = true
 }
 function delBook(id, name, $event) {
+    console.log(id, user_default_book_id.value, name, $event.target);
+    if (id == user_default_book_id.value) return
     $event.stopPropagation()
     const answer = window.confirm('Do you really want to Delete? Unable to recover!')
     if (!answer) return false
@@ -121,6 +151,34 @@ function watch_input(newV) {
 
 <template>
     <div class="ledgerManager">
+        <van-overlay :show="showdetail" @click="showdetail = false">
+            <div class="detail">
+                <div class="top">
+                    <div class="info">
+                        <img src='https://s2.loli.net/2023/02/10/cZkBewG65J3SjHr.png' alt="">
+                        <div class="bookname">
+                            {{ current_clickBook_name }}
+                        </div>
+                        <div class="user">
+                            {{ user_info.userInfo.username }}
+                        </div>
+                        <div class="net">￥{{ current_clickBook_total.income - current_clickBook_total.expend }}</div>
+                        <div class="asset">
+                            <div class="expend"> ￥<span> {{ current_clickBook_total.expend }}</span></div>
+                            <div class="income"> ￥<span> {{ current_clickBook_total.income }}</span> </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="bottom">
+                    <p class="month">本月收支</p>
+                    <div class="box">
+                        <div class="btn expend">￥{{ current_clickBook_month.expend }}</div>
+                        <div class="btn income">￥ {{ current_clickBook_month.income }} </div>
+                    </div>
+                </div>
+            </div>
+        </van-overlay>
         <div class="inner">
             <div class="innerer">
                 <div class="banner">
@@ -131,12 +189,12 @@ function watch_input(newV) {
                 <div class="content">
                     <div class="list">
                         <template v-for="(item, index) in data">
-                            <div class="item" @click="update(item.id, item.name)">
+                            <div class="item" @click="update(item.id, item.name, item)">
                                 <div class="ledger" :class="{ imgshark: isimgshark }">
-                                    <img src='picture/2023/02/10/cZkBewG65J3SjHr.png' alt="">
+                                    <img src='https://s2.loli.net/2023/02/10/cZkBewG65J3SjHr.png' alt="">
                                     <span>{{ item.name }}</span>
                                 </div>
-                                <img v-if="isimgshark" @click="delBook(item.id, item.name, $event)" class="chacha"
+                                <img v-if="isimgshark" @click.stop="delBook(item.id, item.name, $event)" class="chacha"
                                     src="@/assets/img/Profile_Center/chacha.svg" alt="">
                             </div>
                         </template>
@@ -159,7 +217,7 @@ function watch_input(newV) {
                 </div>
                 <div class="conten">
                     <div class="box icon">
-                        <img src="picture/2023/02/10/cZkBewG65J3SjHr.png" alt="">
+                        <img src="https://s2.loli.net/2023/02/10/cZkBewG65J3SjHr.png" alt="">
                         <div class="iright">
                             <div class=" box name line type">
                                 <input type="text" v-model="subMit_name" placeholder="&ensp; Please enter a category name">
@@ -276,6 +334,8 @@ function watch_input(newV) {
     }
 }
 
+
+
 .imgshark {
     animation-name: shake-center;
     animation-duration: 1s;
@@ -302,6 +362,93 @@ function watch_input(newV) {
     display: flex;
     flex-direction: column;
     font-family: Inter;
+
+    .detail {
+        position: absolute;
+        display: grid;
+        width: 75%;
+        height: 55%;
+        // background-color: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, .7);
+        border-radius: 12px;
+        font-family: sans-serif;
+        backdrop-filter: blur(10px); // -webkit-backdrop-filter: blur(10px);
+        left: 50%; //起始是在body中，横向距左50%的位置
+        top: 50%; //起始是在body中，纵向距上50%的位置，这个点相当于body的中心点，div的左上角的定位
+        transform: translate(-50%, -50%); //水平、垂直都居中,也可以写成下面的方式
+
+        .top {
+            display: grid;
+
+            .info {
+                display: grid;
+
+                img {
+                    width: 150px;
+                }
+
+
+                .net {
+                    font-size: 16px;
+                }
+
+                .asset {
+                    display: flex;
+                    width: 100%;
+                    justify-content: space-evenly;
+
+                    .expend {
+                        color: rgb(211, 53, 53)
+                    }
+
+                    .income {
+                        color: green;
+                    }
+                }
+            }
+
+            .info>* {
+                place-self: center;
+            }
+        }
+
+        .bottom {
+            display: grid;
+            grid-template-rows: .5fr 1fr;
+
+
+            .month {
+                justify-self: center;
+                font-size: 20px;
+                font-weight: 600;
+            }
+
+            .box {
+                display: flex;
+                justify-content: space-evenly;
+
+                .btn {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 100px;
+                    height: 50px;
+                    border-radius: 24px;
+                    box-shadow: 0 0 5px #9f9f9f;
+                    color: #e2e1e1DD;
+                    font-weight: 550;
+                }
+
+                .expend {
+                    background-color: #c25a6a;
+                }
+
+                .income {
+                    background-color: #489a4a;
+                }
+            }
+        }
+    }
 
     .inner {
         height: 100%;

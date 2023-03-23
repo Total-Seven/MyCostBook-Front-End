@@ -1,14 +1,15 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import useCenterStore from '@/stores/modules/center';
+// Vue
+import { ref, toRaw, computed, onMounted, onBeforeUnmount, onUnmounted } from 'vue'
+
+// 组件
+import options from './cpns/options.vue'
 import categoryContent from './cpns/category_content.vue'
 // Until
 import { Myfor } from '@/utils'
-// 
-import { useRouter } from 'vue-router';
+// Store
 import { storeToRefs } from 'pinia';
-const router = useRouter()
-
+import useCenterStore from '@/stores/modules/center';
 const centerStore = useCenterStore()
 const { isClicktoEdit, current_option, enterCategoryManner_count } = storeToRefs(centerStore)
 
@@ -18,142 +19,107 @@ const props = defineProps({
         default: () => { }
     }
 })
+
 /* 改变props */
-const typess = computed(() => props.test)
+const types = computed(() => {
+    if (typeof props.test == 'undefined') return       // 卸载时也会计算 ，需要返回
+    else return props.test[current_option.value]
+})
+/**当前选项 Income or Expense */
+const current_index = ref(0)
+/**提取出options */
+const options_keys = computed(() => {
+    if (typeof props.test == 'undefined') return       // 卸载时也会计算 ，需要返回
+    else return Object.keys(props.test)
+})
+
+
 // 新增一个属性控制显示隐藏
 function addProperty() {
-    const for_cb = (element) => {
-        element.hide = true
-        if (element.list) {
-            element.list.push({ id: 0, name: '+', type_id: 1, user_id: 2, avator: '0', noShark: true })
+    if (props.test['Expend'][0].list.at(-1).name == '+') return
+    if (enterCategoryManner_count.value === 0) {
+        const for_cb = (element) => {
+            element.hide = true
+            if (element.list) {
+                element.list.push({ id: 0, name: '+', type_id: 1, user_id: 2, avator: '0', noShark: true })
+            }
+            else {
+                element.list = [{ id: 0, name: '+', type_id: 1, user_id: 2, avator: '0', noShark: true }]
+            }
         }
-        else {
-            element.list = [{ id: 0, name: '+', type_id: 1, user_id: 2, avator: '0', noShark: true }]
+        const insert_Last_Button = (arr) => {
+            Myfor(arr, for_cb)
         }
-        // console.log(element);
-    }
-    const insert_Last_Button = (arr) => {
-        Myfor(arr, for_cb)
-    }
-    // 
-    if (enterCategoryManner_count.value == 0) {
-        insert_Last_Button(typess.value['Expend'])
-        insert_Last_Button(typess.value['Income'])
+        insert_Last_Button(props.test['Expend'])
+        insert_Last_Button(props.test['Income'])
         enterCategoryManner_count.value++
     }
 }
-addProperty(0)
-// 
-const current_index = ref(0)
-const shift = (index, key) => {
-    console.log('shift', index, key);
+addProperty()
+
+onBeforeUnmount(() => {
+    /**卸载的时候 Props不会被卸载？？？ */
+    enterCategoryManner_count.value = 0
+})
+
+/**监听子组件 -- 更新 option */
+function update_current_option(index, key) {
     current_index.value = index
     current_option.value = key
 }
 
-const types = computed(() => {
-    if (!typess.value) return       // 卸载时也会计算 ，需要返回
-    return typess.value[current_option.value]
-})
-
-const edit = () => {
+/**开启编辑状态 -- 可删除类别 */
+function edit_category() {
     isClicktoEdit.value == true ? isClicktoEdit.value = false : isClicktoEdit.value = true
+}
+const text_title = ref('Categories')
+/**点击iten 查看消费金额 */
+function notify(params) {
+    text_title.value = params
+    setTimeout(() => {
+        text_title.value = 'Categories'
+    }, 1500);
 }
 </script>
 
 <template>
     <div class="categoryManager">
         <div class="banner">
-            <div class="left"><span>&ensp;&ensp;</span></div>
-            <div class="middle">Categories</div>
-            <div class="right"><span>&ensp;&ensp;</span></div>
+            <div class="middle" v-html="text_title"></div>
         </div>
-        <div class="options">
-            <div class="Ol"><van-icon @click="router.back()" name="arrow-left" size="16px" /></div>
-            <div class="Om">
-                <div class="menu">
-                    <template v-for="(value, key, index) in test" :key="index">
-                        <div class=" item " :class="{ active: current_index == index }" @click="shift(index, key)"><span>{{
-                            key
-                        }}</span></div>
-                    </template>
-                </div>
-            </div>
-            <div class="Or"><van-icon @click="edit" name="edit" size="20" /></div>
-        </div>
-        <categoryContent :types="types" class="content" />
-        <!-- <span>{{ test }}</span> -->
+        <options @edit:category="edit_category" @update:current_option="update_current_option"
+            :current_index="current_index" :options="options_keys" />
+        <categoryContent @notify:itenAmount="notify" :types="types" :current_index="current_index" class="content" />
     </div>
 </template>
 
 <style lang="less" scoped>
+.flex {
+    display: flex;
+    align-items: center;
+}
+
 .categoryManager {
-    padding: 30px 20px 10px;
-    box-sizing: border-box;
     position: fixed;
     z-index: 4;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 30px 20px 10px;
     width: 100vw;
     height: 100vh;
     background-color: #e2e2e2;
-    display: flex;
-    flex-direction: column;
 
     .banner {
+        display: grid;
         flex-shrink: 0;
         margin-top: 10px;
-        width: 100%;
         height: 40px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
 
         .middle {
+            place-self: center;
             font-weight: 600;
-            font-size: 20px;
-        }
-    }
-
-    .options {
-        margin-top: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        .menu {
-            background-color: #dcdada;
-            // 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            // 
-            width: 160px;
-            height: 30px;
-            padding: 3px;
-            // border: 1px solid #438883;
-            border-radius: 12px;
-            color: #438883;
-
-            .item {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                width: 50%;
-                height: 30px;
-                // background-color: #ece9e9;
-                border-radius: 8px;
-            }
-
-            .active {
-                background-color: #fff;
-            }
-
-            span {
-                line-height: 24px;
-            }
-
-            .icon {
-                margin-left: 10px;
-            }
+            font-size: 22px;
         }
     }
 

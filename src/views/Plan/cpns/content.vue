@@ -1,6 +1,7 @@
 <script setup>
-import { move } from '@antfu/utils';
-import { ref, onMounted, toRaw } from 'vue';
+import { ref, onMounted, computed, toRaw } from 'vue';
+// 组件
+import empty from '@/components/empty.vue';
 // Vant
 import { showConfirmDialog, closeDialog } from 'vant';
 import 'vant/es/dialog/style'
@@ -11,7 +12,7 @@ import usePlanStore from '@/stores/modules/plan';
 import { storeToRefs } from 'pinia';
 import { createURLObj } from '@/utils';
 const planStore = usePlanStore()
-const { shopping_list, delete_ShoppingList_info, add_goods_info, del_goods_info_id } = storeToRefs(planStore)
+const { shopping_list, delete_ShoppingList_info, del_goods_info_id } = storeToRefs(planStore)
 
 // Touch事件
 const Ref_content = ref()
@@ -151,26 +152,14 @@ function handleTouchend(e) { // 拖拽结束
 }
 onMounted(handlerMounted)
 
-
+const isEmpty = computed(() => {
+    if (toRaw(shopping_list.value.length == 0 && Object.prototype.toString.call(shopping_list.value) == '[object Array]')) return true
+})
 /**展开与折叠 */
 function fold(item, index) {
     item.isShow = item.isShow == true ? false : true
 }
-/**一键记账 */
-function charge(item, index) {
-    console.log('charge', item.name);
-    /**
-     * （inventory_id）
-     * 弹出选择框，选择扣款账户（account_id）
-     * 账本默认为购物清单，分类也默认为购物清单
-     * 金额 需要计算
-     * /**
-     *  *  根据复选框选中的item，计算总金额，并且将每个item的id提交（goods_list_id）
-     *  *  服务器根据id列表，在goods表里，删除它们，并且在inventory里的include_number减去列表的长度.总金额也需扣掉 (goods_total_amount)
-     *  *  完成inventory表和goods的变化后，再判断当前total_amount和include_number是否为0，是则 在subscription写入finish，返回
-     *  *  前端根据subscription字段 选择不渲染此清单，而是转入已完成的地方。 
-     *  */
-}
+
 /**Map 商品序号和名字 */
 function map_goods_name(iten, indey) {
     if (iten.isAddBtn) return `${iten.name}`
@@ -203,11 +192,13 @@ function Delete_list(item, index) {
     console.log(item, index);
 }
 /**点击+ */
-const show_addGoods_popUp = ref(false)
 const text_add_title = ref('Add Goods')
-const cur_item = ref()
-const cur_indey = ref()
+
+
+const emit = defineEmits(['clickAddGoods'])
 function clickIten(item, index, iten, indey) {
+
+    // 
     console.log('del_id:', iten.id);
     console.log(item.goods_list[indey]);
     if (iten.name !== '+') {
@@ -236,39 +227,79 @@ function clickIten(item, index, iten, indey) {
         });
     }
     else {
-        cur_item.value = item
-        cur_indey.value = indey
-        console.log(toRaw(item.goods_list[indey - 1]), indey);
-        show_addGoods_popUp.value = true
+        emit('clickAddGoods', item, indey)
     }
 }
-const cur_Goods_describe = ref()
-const cur_Goods_amount = ref()
-const cur_Goods_name = ref()
-function submit_addGoods() {
-    console.log(cur_item.value, cur_indey.value);
-    if (!cur_Goods_name.value || !cur_Goods_amount.value) {
-        text_add_title.value = '商品名和金额不能为空'
-        setTimeout(() => {
-            text_add_title.value = 'Add Goods'
-        }, 1200);
+
+/**勾选 */
+function click_gou(iten, indey) {
+    console.log('gou');
+    console.log(toRaw(iten), indey);
+}
+/**一键记账 */
+function charge(item, index) {
+    console.log(toRaw(item));
+    // 过滤
+    const checked_iten_list = item.goods_list.filter(el => el.checked == true)
+    if (checked_iten_list.length == 0 && Object.prototype.toString.call(checked_iten_list) == '[object Array]') {
+        alert('没有勾选商品')
         return
     }
-    const goods_obj = { name: cur_Goods_name.value, amount: cur_Goods_amount.value, describe: cur_Goods_describe.value, list_id: cur_item.value.id, list_name: cur_item.value.name, picture: '' }
-    // /**网络请求 */
-    add_goods_info.value = createURLObj(goods_obj)
-    planStore.Post_Add_Goods().then(data => {
-        const target_id = data.new_goods[0].id
-        // 成功👇
-        /**前端处理 */
-        const new_obj = { id: target_id, ...goods_obj, checked: false }
-        console.log(new_obj);
-        cur_item.value.goods_list.splice(cur_indey.value, 0, new_obj)
-        showNotify({ type: 'success', message: '添加成功' });
-        show_addGoods_popUp.value = false
-    })
+    // 弹窗 ： 选择账户
 
-    // creating_shoppingList.value.goods_list.push(goods_obj)
+    // 
+    const goods_list_id = checked_iten_list.map(mp => mp.id)
+    // 计算金额
+    const _CIL_amount = checked_iten_list.reduce((pre, cur) => {
+        return pre += Number(cur.amount)
+    }, 0)
+    // 获取用户的购物清单ID，名 
+    console.log(item.id, item.name);
+    console.log(_CIL_amount, goods_list_id);
+    // 内含商品数、总金额
+    console.log(item.include_number, item.total_amount);
+    console.log(item.describe);
+    // 构建JSON对象
+    const json_obj = {
+        inventory_id: item.id, account_id: 6, total_amount: _CIL_amount, goods_number: goods_list_id.length,
+        goods_id_list: goods_list_id
+    }
+    // Request接口
+    planStore.Post_charge(json_obj).then(data => {
+        console.log('data:', data);
+        // ✔ => 更新View
+        // 根据 goods_list_id 删除数组元素
+        for (const iterator of goods_list_id) {
+            const targetindex = item.goods_list.findIndex(item => {
+                console.log('finding : ', item.id, iterator,);
+                return item.id == iterator
+            })
+            if (targetindex == -1) return
+            console.log('❌targetIndex', targetindex);
+            item.goods_list.splice(targetindex, 1)
+        }
+        item.total -= _CIL_amount
+        showNotify({ type: 'success', message: '❀ 一键记账成功 !' });
+    }).catch(message => {
+        // × => 返回并提示 
+        console.log(message);
+        // 轻提示Error
+        showNotify({ type: 'warning', message: '出错了' });
+    })
+    /**
+     * （inventory_id）
+     * 弹出选择框，选择扣款账户（account_id）
+     * 账本默认为购物清单，分类也默认为购物清单
+     * 金额 需要计算
+     * /**
+     *  *  根据复选框选中的item，计算总金额，并且将每个item的id提交（goods_list_id）
+     *  *  服务器根据id列表，在goods表里，删除它们，并且在inventory里的include_number减去列表的长度.总金额也需扣掉 (goods_total_amount)
+     * 
+     *  *  完成inventory表和goods的变化
+     * 
+     *  *  之后，再判断当前total_amount和include_number是否为0，是则 在subscription写入finish，返回
+     *  *  前端根据subscription字段 选择不渲染此清单，而是转入已完成的地方。 
+     *  */
 }
 </script>
 
@@ -285,7 +316,7 @@ function submit_addGoods() {
             <!-- Touch事件触发口 -->
             <h2 class="title">Shopping List</h2>
             <!-- 清单列表 -->
-            <div class="list">
+            <div class="list" v-if="!isEmpty">
                 <template v-for="(item, index) in shopping_list" :key="index">
                     <!-- 滑动单元格--右滑删除 -->
                     <van-swipe-cell right-width="100">
@@ -319,7 +350,8 @@ function submit_addGoods() {
                                             v-for="(iten, indey) in item.goods_list" :title="map_goods_name(iten, indey)"
                                             class="li" :key="iten">
                                             <template #right-icon>
-                                                <van-checkbox v-if="!iten.isAddBtn" icon-size="24px"
+                                                <van-checkbox @click="click_gou(iten, indey)" v-if="!iten.isAddBtn"
+                                                    icon-size="24px"
                                                     style="border: 0;border-radius: 50%;box-shadow:0 1px 6px #799;"
                                                     v-model="iten.checked" checked-color="#ffda72FF" :name="item"
                                                     @click.stop />
@@ -352,43 +384,16 @@ function submit_addGoods() {
                     <!-- 滑动单元格--右滑删除 -->
                 </template>
             </div>
+            <div class="empty" v-if="isEmpty">
+                <empty>
+                    <template #icon>
+                        <div class="iconfont icon-queshengye_zanwujiaofei"></div>
+                    </template>
+                </empty>
+            </div>
             <!-- 清单列表 -->
         </div>
-        <van-popup class="popup" v-model:show="show_addGoods_popUp" position="bottom" :style="{ height: '40%' }" round>
-            <div class="inner">
-                <div class="banner">
-                    <div class="left" @click="show_addGoods_popUp = false"><van-icon name="arrow-left" size="22" />
-                    </div>
-                    <div class="middle">
-                        <h2 v-html="text_add_title"></h2>
-                    </div>
-                    <div class=" box submit">
-                        <div class="btn" @click="submit_addGoods">
-                            <van-icon name="success" size="36" />
-                        </div>
-                    </div>
-                </div>
-                <div class="conten">
-                    <div class="box icon">
-                        <img src="picture/2023/02/10/cZkBewG65J3SjHr.png" alt="">
-                        <div class="iright">
-                            <div class="line type">
-                                <span style="font-size: 12px;">金额:</span>
-                                <input v-model="cur_Goods_amount" type="text" placeholder="￥">
-                            </div>
-                            <div class="line category">
-                                <span style="font-size: 12px;">名称:</span>
-                                <input v-model="cur_Goods_name" type="text">
-                            </div>
-                        </div>
-                    </div>
-                    <div class=" box describe">
-                        <input v-model="cur_Goods_describe" type="text"
-                            placeholder="Please describe the item  --  ( optional )">
-                    </div>
-                </div>
-            </div>
-        </van-popup>
+
         <!-- 在整个Plan页面中是foot -->
     </div>
     <!-- ref可判断当前组件位置 -->
@@ -399,16 +404,18 @@ function submit_addGoods() {
     display: flex;
     justify-content: center;
     align-items: center;
+
 }
 
 .content {
+    position: relative;
     width: 100vw;
     height: 80%;
     position: fixed;
     bottom: -50%;
     border-radius: 40px 40px 0 0;
     overflow-y: auto;
-    background-color: #ededed;
+    background: rgb(223, 232, 231);
 
     &::-webkit-scrollbar {
         display: none;
@@ -557,11 +564,24 @@ function submit_addGoods() {
 
             }
         }
+
+        .empty {
+            width: 200px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     }
+
+
 
     .popup {
         position: absolute;
         bottom: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
 
         &.webkit-scroll {
             display: none;

@@ -1,5 +1,9 @@
 import axios from 'axios'
+
 import { rabbit_URL, TimeOut } from './config'
+
+import useLoginStore from '@/stores/modules/login'
+
 
 class LAxios {
     constructor(baseURL, TIMEOUT) {
@@ -13,16 +17,16 @@ class LAxios {
                 authorization: sessionStorage.getItem('token')
             }
             // 加载动画
-            // mainStore.isloading = true
+            useLoginStore().isShowPlaneLoading = true
             return config
         }, err => {
             return err
         })
         this.instance.interceptors.response.use(config => {
-            // mainStore.isloading = false
+            useLoginStore().isShowPlaneLoading = false
             return config
         }, err => {
-            // mainStore.isloading = false
+            useLoginStore().isShowPlaneLoading = false
             return err
         })
     }

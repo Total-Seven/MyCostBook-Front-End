@@ -1,8 +1,10 @@
 <script setup>
 // Vue
-import { toRaw, defineEmits } from 'vue';
+import { toRaw, defineEmits, computed } from 'vue';
 // Utils
 import { createURLObj } from '@/utils';
+// 组件
+import empty from '@/components/empty.vue'
 // Vant
 import { showSuccessToast } from 'vant'
 import 'vant/es/toast/style'
@@ -17,67 +19,16 @@ const costStore = useCostStore()
 const { plan_list } = storeToRefs(loginStore)
 const { del_plan_info } = storeToRefs(costStore)
 // 
-setTimeout(() => {
-    console.log(toRaw(plan_list.value));
-}, 2000);
 const emit = defineEmits(["CreatePlan"])
 // 
 const router = useRouter()
 // 
-const planList = [
-    {
-        name: 'Saving a small vault',
-        mode: '12 Deposit Slip',
-        current_amount: 1000,
-        total_amount: 18000,
-        progress: 8,
-        icon: 'money.svg',
-    },
-    {
-        name: 'Saving a small vault',
-        mode: '52 Weeks Deposit',
-        current_amount: 800,
-        total_amount: 16000,
-        progress: 10,
-        icon: 'building.svg',
-    }, {
-        name: 'Saving a small vault',
-        mode: '365 Wdays Deposit',
-        current_amount: 1000,
-        total_amount: 18000,
-        progress: 80,
-        icon: 'letterBook.svg',
-    }, {
-        name: 'Saving a small vault',
-        mode: '12 Save',
-        current_amount: 800,
-        total_amount: 16000,
-        progress: 50,
-        icon: 'coffee.svg',
-    }, {
-        name: 'Saving a small vault',
-        mode: 'Quota',
-        current_amount: 1000,
-        total_amount: 18000,
-        progress: 78,
-        icon: 'hot.svg',
-    }, {
-        name: 'Saving a small vault',
-        mode: 'Free',
-        current_amount: 800,
-        total_amount: 16000,
-        progress: 0.10,
-        icon: 'earphone.svg',
-    }, {
-        name: 'Saving a small vault',
-        mode: 'flexible',
-        current_amount: 1000,
-        total_amount: 18000,
-        progress: 44,
-        icon: 'water.svg',
-    },
-]
+const isEmpty = computed(() => {
+    if (Object.prototype.toString.call(plan_list.value) == '[object Array]' && plan_list.value.length === 0) return true
+    else return false
+})
 
+// 
 function getUrl(img) {
     return new URL(`../../../../assets/img/home/SavePlan/${img}`, import.meta.url).href
 }
@@ -91,7 +42,7 @@ function clickPlan_Item(item, index) {
     console.log(toRaw(item), index);
     // /plan_detail/:id/name/:name
     router.push({
-        // path: '/plan_detail',
+        path: '/plan_detail',
         name: '计划详情',
         query: {
             id: item.id,
@@ -132,19 +83,18 @@ function Del_Plan_Item(item) {
         <div class="title">
             <div class="left">
                 <span>SaveMoney Plan</span>
-                <van-icon name="arrow" />
+                <van-icon name=" arrow" />
             </div>
             <div class="right">
                 <van-icon @click="click" name="smile" color="rgba(66.17, 149.81, 143.75, 1) " size="2rem" />
             </div>
         </div>
-        <div class="list">
+        <div v-if="!isEmpty" class="list">
             <template v-for="(item, index) in plan_list">
                 <van-swipe-cell>
                     <div class="item" @click="clickPlan_Item(item, index)">
                         <div class="icon">
                             <img src="@/assets/img/home/SavePlan/coffee.svg" alt="">
-                            <!-- <img :src="getUrl(item.icon)" alt=""> -->
                         </div>
                         <div class="content">
                             <div class="ctx top">
@@ -159,31 +109,35 @@ function Del_Plan_Item(item) {
                                 <div class="progress">
                                     <van-progress :percentage="toPercent(item.saved_money / item.target_money)"
                                         color="linear-gradient(to right,#42958F,#7AC5CD)" />
-                                    <!-- <van-progress :percentage="item.progress"
-                                                                                                                                                                                                                                                                                                                                                        color="linear-gradient(to right, #be99ff, #7232dd)" /> -->
                                 </div>
-                                <!-- <div div class=" rate">{{ item.progress }}</div> -->
                             </div>
                         </div>
                     </div>
                     <template #right>
-                        <van-button @click="Del_Plan_Item(item)" style="height:100%" square type="danger" text="Delete" />
-                        <van-button style="height:100%" color="#30827c" square type="primary" text="Modify" />
+                        <van-button @click="Del_Plan_Item(item)" style="margin-left: 12px;height:100%;border-radius: 18px;"
+                            square type="danger" text="Delete" />
+                        <van-button style="margin-left: 4px;height:100%;border-radius: 18px;" color="#30827c" square
+                            type="primary" text="Modify" />
                     </template>
                 </van-swipe-cell>
             </template>
         </div>
+        <empty v-if="isEmpty">
+        </empty>
     </div>
 </template>
 
 <style lang="less" scoped>
 .planList {
     width: 370px;
+    height: 50vh;
     position: absolute;
     top: 350px;
     color: black;
     padding: 22px;
     margin-bottom: 80px;
+    display: grid;
+    grid-template-rows: .15fr 1fr;
 
     .title {
         font-size: 18px;

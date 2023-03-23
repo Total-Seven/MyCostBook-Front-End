@@ -1,5 +1,7 @@
 <script setup>
 import { ref, onMounted, reactive, watch, toRaw } from 'vue';
+// Util
+import { createURLObj } from '@/utils';
 // Store
 import usePlanStore from '@/stores/modules/plan';
 // Vant
@@ -17,107 +19,9 @@ import { storeToRefs } from 'pinia';
 import useTouch from '@/utils/touch';
 // Store
 const planStore = usePlanStore()
-const { shopping_list, create_ShoppingList_info } = storeToRefs(planStore)
+const { shopping_list, create_ShoppingList_info, add_goods_info } = storeToRefs(planStore)
 /** */
 planStore.get_all_inventory()
-// Highcharts.chart('container', );
-// const chartOption = {
-//     title: {
-//         text: 'Highcharts Wind Barbs'
-//     },
-//     xAxis: {
-//         type: 'datetime',
-//         offset: 40
-//     },
-//     plotOptions: {
-//         series: {
-//             pointStart: Date.UTC(2017, 0, 29),
-//             pointInterval: 36e5
-//         }
-//     },
-//     series: [{
-//         type: 'windbarb',
-//         data: [
-//             [9.8, 177.9],
-//             [10.1, 177.2],
-//             [11.3, 179.7],
-//             [10.9, 175.5],
-//             [9.3, 159.9],
-//             [8.8, 159.6],
-//             [7.8, 162.6],
-//             [5.6, 186.2],
-//             [6.8, 146.0],
-//             [6.4, 139.9],
-//             [3.1, 180.2],
-//             [4.3, 177.6],
-//             [5.3, 191.8],
-//             [6.3, 173.1],
-//             [7.7, 140.2],
-//             [8.5, 136.1],
-//             [9.4, 142.9],
-//             [10.0, 140.4],
-//             [5.3, 142.1],
-//             [3.8, 141.0],
-//             [3.3, 116.5],
-//             [1.5, 327.5],
-//             [0.1, 1.1],
-//             [1.2, 11.1]
-//         ],
-//         name: 'Wind',
-//         color: Highcahrts.getOptions().colors[1],
-//         showInLegend: false,
-//         tooltip: {
-//             valueSuffix: ' m/s'
-//         }
-//     }, {
-//         type: 'area',
-//         keys: ['y', 'rotation'], // rotation is not used here
-//         data: [
-//             [9.8, 177.9],
-//             [10.1, 177.2],
-//             [11.3, 179.7],
-//             [10.9, 175.5],
-//             [9.3, 159.9],
-//             [8.8, 159.6],
-//             [7.8, 162.6],
-//             [5.6, 186.2],
-//             [6.8, 146.0],
-//             [6.4, 139.9],
-//             [3.1, 180.2],
-//             [4.3, 177.6],
-//             [5.3, 191.8],
-//             [6.3, 173.1],
-//             [7.7, 140.2],
-//             [8.5, 136.1],
-//             [9.4, 142.9],
-//             [10.0, 140.4],
-//             [5.3, 142.1],
-//             [3.8, 141.0],
-//             [3.3, 116.5],
-//             [1.5, 327.5],
-//             [0.1, 1.1],
-//             [1.2, 11.1]
-//         ],
-//         color: Highcahrts.getOptions().colors[0],
-//         fillColor: {
-//             linearGradient: { x1: 0, x2: 0, y1: 0, y2: 1 },
-//             stops: [
-//                 [0, Highcahrts.getOptions().colors[0]],
-//                 [
-//                     1,
-//                     Highcahrts.color(Highcahrts.getOptions().colors[0])
-//                         .setOpacity(0.25).get()
-//                 ]
-//             ]
-//         },
-//         name: 'Wind speed',
-//         tooltip: {
-//             valueSuffix: ' m/s'
-//         }
-//     }]
-// }
-
-
 //  
 const Ref_target = ref()
 const { moveX, moveY } = useTouch(Ref_target, false)
@@ -129,28 +33,34 @@ watch([moveX, moveY], ([newV1, newV2], [oldV1, oldV2]) => {
 })
 
 
-onMounted(() => {
-})
+// 大按钮功能
+/**
+ * 创建清单 -- 可选择添加商品
+ */
 const creating_shoppingList = ref({
     name,
     goods_list: [],
 })
-const showBottom_popup = ref(false)
-const show_addGoods_popUp = ref(false)
-const text_add_title = ref('Add Goods')
-function Create_Inventory() {
-    console.log('Create_Inventory');
-    showBottom_popup.value = true
-    /**
-     * 1. 弹出PopUp
-     * 2. 填写信息
-     * 3. 提交
-     * 4. 网络请求
-     * 5. 成功处理
-     * /**
-     * 
-     *  */
-}
+
+const showBottom_popup = ref(false)  //创建清单 -- PopUp
+const show_addGoods_popUp = ref(false)  // 创建清单 AddGoods  -- PopUp
+const text_add_title = ref('Add Goods')   // 创建清单 AddGoods  -- Title
+
+
+// 创建清单 AddGoods  -- PopUp
+const cur_item = ref()
+const cur_indey = ref()
+
+const cur_Goods_describe = ref()   //描述
+const cur_Goods_amount = ref()    //金额
+const cur_Goods_name = ref()     //名字
+/**
+ * 创建清单 -- PopUp
+ * 
+ * 提交清单
+ * 
+ * 提交商品
+ */
 function submit_inventory() {
     console.log('submit_inventory');
     /**添加图片，计算总金额 */
@@ -170,7 +80,7 @@ function submit_inventory() {
     planStore.Post_Create_Shopping_list().then(data => {
         /**改变content的数组 */
         creating_shoppingList.value.goods_list.push({ name: '+', amount: 88, checked: false, isAddBtn: true })
-        shopping_list.value.push({ isShow: false, total: total, icon: '', ...creating_shoppingList.value })
+        shopping_list.value.push({ id: data.inventory[0].id, isShow: false, total: total, icon: '', ...creating_shoppingList.value })
         console.log(data);
         /**弹窗 */
         showBottom_popup.value = false
@@ -194,19 +104,65 @@ function submit_addGoods() {
         }, 1200);
         return
     }
-    const goods_obj = { name: cur_Goods_name.value, amount: cur_Goods_amount.value, describe: cur_Goods_describe.value }
-    console.log('添加商品信息：', goods_obj);
-    creating_shoppingList.value.goods_list.push(goods_obj)
-    show_addGoods_popUp.value = false
-    showNotify({ type: 'success', message: '添加成功' });
+    /**
+      * 区分：  List点击 还是 Creating点击 
+      */
+    let goods_obj = {}
+    let isSuccess = false
+    if (showBottom_popup.value) {
+        /**正在创建清单 */
+        goods_obj = { name: cur_Goods_name.value, amount: cur_Goods_amount.value, describe: cur_Goods_describe.value }
+        isSuccess = true
+        if (!isSuccess) return
+        /**finally */
+        showNotify({ type: 'success', message: '添加成功' });
+        show_addGoods_popUp.value = false
+        creating_shoppingList.value.goods_list.push(goods_obj)
+        cur_Goods_name.value = undefined
+        cur_Goods_amount.value = undefined
+        cur_Goods_describe.value = undefined
+    }
+    else if (!showBottom_popup.value) {
+        goods_obj = { name: cur_Goods_name.value, amount: cur_Goods_amount.value, describe: cur_Goods_describe.value, list_id: cur_item.value.id, list_name: cur_item.value.name, picture: '' }
+        console.log(goods_obj);
+        add_goods_info.value = createURLObj(goods_obj)
+        planStore.Post_Add_Goods().then(data => {
+            console.log('!!!添加成功');
+            const target_id = data.new_goods[0].id
+            // 成功👇
+            /**前端处理 */
+            const new_obj = { id: target_id, ...goods_obj, checked: false }
+            console.log(new_obj);
+            cur_item.value.goods_list.splice(cur_indey.value, 0, new_obj)
+            cur_item.value.total += Number(cur_Goods_amount.value)
+            isSuccess = true
+            console.log(isSuccess);
+            if (!isSuccess) return
+            /**finally */
+            showNotify({ type: 'success', message: '添加成功' });
+            show_addGoods_popUp.value = false
+            cur_Goods_name.value = undefined
+            cur_Goods_amount.value = undefined
+            cur_Goods_describe.value = undefined
+        })
+    }
+
 }
-const cur_Goods_describe = ref()
-const cur_Goods_amount = ref()
-const cur_Goods_name = ref()
+/**
+ * 删除
+ */
 function del_goods(item, index) {
     console.log('del', item, index);
     creating_shoppingList.value.goods_list.splice(index, 1)
     showNotify({ type: 'warning', message: '删除成功' });
+}
+
+
+function clickAddGoods(item, indey) {
+    console.log('plan,clickAddGoods');
+    show_addGoods_popUp.value = true
+    cur_item.value = item
+    cur_indey.value = indey
 }
 </script>
 
@@ -217,10 +173,10 @@ function del_goods(item, index) {
             <div class="del" ref="Ref_target" @touchmove.stop.prevent>来抓我呀</div>
             <dashBoard />
             <div class="options">
-                <div class="one box" @click="Create_Inventory">Shopping List</div>
+                <div class="one box" @click="showBottom_popup = true">Shopping List</div>
                 <div class="two box">Saving Plan</div>
             </div>
-            <content ref='Ref_content' />
+            <content ref='Ref_content' @clickAddGoods="clickAddGoods" />
             <van-popup v-model:show="showBottom_popup" round position="bottom" :style="{ height: '70%' }">
                 <div class="popUp-inner">
                     <div class="topBar">
@@ -276,7 +232,7 @@ function del_goods(item, index) {
                     </div>
                     <div class="conten">
                         <div class="box icon">
-                            <img src="picture/2023/02/10/cZkBewG65J3SjHr.png" alt="">
+                            <img src="https://s2.loli.net/2023/02/10/cZkBewG65J3SjHr.png" alt="">
                             <div class="iright">
                                 <div class="line type">
                                     <span style="font-size: 12px;">金额:</span>
@@ -301,6 +257,7 @@ function del_goods(item, index) {
 
 <style lang="less" scoped>
 .plan {
+
     /**
       * margin-top传递问题:
       * 1.border: 1px solid transparent;
@@ -313,6 +270,7 @@ function del_goods(item, index) {
     // overflow-y: auto;
     overflow-y: hidden;
     overflow-x: hidden;
+    position: relative;
 
     .inner {
         opacity: 0.9;

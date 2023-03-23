@@ -147,30 +147,26 @@ const closed = () => {
 
 .photo {
     z-index: 3;
-    position: absolute;
+    position: relative;
     .flex();
     flex-direction: column;
-    top: 306px;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
+    top: 40vw;
+    left: 25vw;
     width: 200px;
     height: 200px;
+    font-family: Inter;
 
     img {
         width: 140px;
         height: 140px;
         border-radius: 60px;
-        box-shadow: 0px 5px 7px rgba(0, 0, 0, 0.04);
+        box-shadow: 0px 4px 5px rgba(0, 0, 0, 0.04);
     }
 
     .name {
         width: 188px;
         height: 24px;
-
         color: rgb(34, 34, 34);
-        font-family: Inter;
         font-size: 20px;
         font-weight: 600;
         line-height: 24px;
@@ -182,7 +178,6 @@ const closed = () => {
         margin-top: 5px;
         margin-right: 5px;
         color: rgb(67, 136, 131);
-        font-family: Inter;
         font-size: 14px;
         font-weight: 600;
     }

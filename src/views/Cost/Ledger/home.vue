@@ -169,6 +169,19 @@ function confirms({ selectedValues }) {
     // 
     showStart_date_POPUP.value = false
 }
+function keepTwoDecimalStr(num) {
+    const result = Number(num.toString().match(/^\d+(?:\.\d{0,2})?/));
+    let s = result.toString();
+    let rs = s.indexOf('.');
+    if (rs < 0) {
+        rs = s.length;
+        s += '.';
+    }
+    while (s.length <= rs + 2) {
+        s += '0';
+    }
+    return Number(s);
+};
 </script>
 <template>
     <div class="LedgerHome">
@@ -198,7 +211,7 @@ function confirms({ selectedValues }) {
                         <div class="text">
                             <div class="one">{{ map_planMode(choice_PLan_Mode) }}day later</div>
                             <div class="two">can save</div>
-                            <div class="three">￥{{ target_money }}</div>
+                            <div class="three">￥{{ keepTwoDecimalStr(target_money) }}</div>
                         </div>
                     </div>
                 </div>
@@ -218,7 +231,6 @@ function confirms({ selectedValues }) {
                     </div>
                     <div class="End">{{ added_End_Date }}</div>
                 </div>
-
                 <div class="box target_amount">
                     <input v-model="daily_money" type="number" placeholder="daily money">
                     <div> Amount</div>

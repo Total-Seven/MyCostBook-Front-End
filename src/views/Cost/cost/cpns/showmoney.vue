@@ -1,18 +1,36 @@
 <script setup>
-const props = defineProps({
-    net: {
-        type: Number,
-        default: 0,
-    },
-    expense: {
-        type: Number,
-        default: 0,
-    },
-    income: {
-        type: Number,
-        default: 0,
-    },
-})
+// Vue
+import { computed } from 'vue';
+// Store
+import useCostStore from '@/stores/modules/cost';
+import { storeToRefs } from 'pinia';
+const costStore = useCostStore()
+const { obj } = storeToRefs(costStore)
+
+/**
+ * 保留两位小数
+ */
+function keepTwoDecimalStr(num) {
+    const result = Number(num.toString().match(/^\d+(?:\.\d{0,2})?/));
+    let s = result.toString();
+    let rs = s.indexOf('.');
+    if (rs < 0) {
+        rs = s.length;
+        s += '.';
+    }
+    while (s.length <= rs + 2) {
+        s += '0';
+    }
+    return Number(s);
+};
+
+
+const expense = computed(() => keepTwoDecimalStr(obj.value.total_expense))
+const income = computed(() => keepTwoDecimalStr(obj.value.total_income))
+
+const net = computed(() => income.value - expense.value)
+
+
 </script>
 
 <template>

@@ -21,6 +21,8 @@ img {
 body {
     font-size: 14px;
     font-family: Inter;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 .top-page {
@@ -38,4 +40,42 @@ body {
 
 .bottom-gray-line {
     border-bottom: 1px solid #f2f2f2;
+}
+
+
+/**
+Cost-PopUp
+*/
+.cost-popUp-box {
+    position: absolute;
+    width: 318px;
+    height: 50px;
+    box-sizing: border-box;
+    border: 1px solid #5e10bf;
+    box-shadow: 1px 1px 8px #5e10bf;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 15px;
+
+
+}
+
+.cost-popUp-box-left {
+    height: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.cost-popUp-img {
+    display: block;
+    width: 32px;
+    height: 32px;
+    position: relative;
+    top: -2px;
+    left: 0px;
+    box-shadow: 0px 4px 4px #666;
+    border-radius: 16px
 }
