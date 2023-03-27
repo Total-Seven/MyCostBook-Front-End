@@ -16,14 +16,6 @@ const shift = (item, index) => {
 
 <template>
     <div class="menus">
-        <!-- <div class="menu" @click="ismenu == true ? ismenu = false : ismenu = true">
-                                                                                                                                                                                                                                                                                <span>Expense</span>
-                                                                                                                                                                                                                                                                                <van-icon v-if="ismenu == false" class="icon" name="arrow-down" />
-                                                                                                                                                                                                                                                                                <van-icon v-else-if="ismenu == true" class="icon" name="arrow-up" />
-                                                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                                                            <div class='at-container' :class="{ 'at-item': ismenu }">
-                                                                                                                                                                                                                                                                                <div id='at-item'></div>
-                                                                                                                                                                                                                                                                            </div> -->
         <div class="menu">
             <template v-for="(item, index) in menu" :key="index">
                 <div class=" item " :class="{ active: current_menu == item }" @click="shift(item, index)"><span>{{ item

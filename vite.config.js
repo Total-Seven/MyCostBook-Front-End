@@ -42,6 +42,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/rabbit/, '')
       },
+      '/ws': {
+        target: 'http://47.102.117.116:7001/',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/ws/, '')
+      },
       '/picture': {
         target: 'https://s2.loli.net',
         changeOrigin: true,

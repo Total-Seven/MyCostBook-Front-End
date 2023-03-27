@@ -1,7 +1,5 @@
 <script setup>
 // 
-import { toRaw } from 'vue';
-// 
 import { useRouter } from 'vue-router';
 // 网络请求
 import LAxios from '@/service/request/index'
@@ -20,14 +18,12 @@ if (Object.prototype.toString.call(books.value) == '[object Object]' && Object.k
     if (res.code == 200) {
         // 
         function del_shooping_book(raw_arr) {
-            console.log(raw_arr);
             const targetIndex = raw_arr.findIndex(el => {
                 return el.name == '购物清单'
             })
             return raw_arr.splice(targetIndex - 1, 1)
         }
         const new_books = del_shooping_book(res.data.books)
-        console.log(new_books);
         // 
         books.value = new_books
         plan_list.value = res.data.plan
@@ -60,6 +56,7 @@ const click = (bookName, bookId, bookType) => {
 <template>
     <div class="mybook">
         <template v-for="(book, index) in books" :key="book.id">
+            <!-- {{ books }} -->
             <div class="book" @click="click(book.name, book.id, book.book_type)">
                 <h2>{{ book.name }}</h2>
                 <img :src="getUrl(book.img)" style="position: relative; display: block;" :style="book.style" />

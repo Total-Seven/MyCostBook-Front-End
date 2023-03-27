@@ -12,9 +12,13 @@
 <body>
   <div id="app">
   </div>
-  <!-- <script src="http://cdn.hcharts.cn/highcharts/highcharts-3d.js"></script> -->
-  <!-- <script src="https://code.highcharts.com/modules/accessibility.js"></script> -->
+  <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"
+    integrity="sha384-fKnu0iswBIqkjxrhQCTZ7qlLHOFEgNkRmK2vaO/LbTZSXdJfAu6ewRBdwHPhBo/H" crossorigin="anonymous">
+    </script>
   <script type="module" src="/src/main.js"></script>
+  <script>
+    var socket = window.io.connect('ws://localhost:7001')
+  </script>
 </body>
 
 </html>

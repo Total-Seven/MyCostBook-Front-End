@@ -10,6 +10,7 @@ import { showSuccessToast } from 'vant'
 import 'vant/es/toast/style'
 // Router
 import { useRouter } from 'vue-router';
+import { keepTwoDecimalStr } from '@/utils/common'
 // Store 
 import { storeToRefs } from 'pinia';
 import useLoginStore from '@/stores/modules/login';
@@ -38,9 +39,9 @@ function toPercent(point) {
     return str;
 }
 // 
+
 function clickPlan_Item(item, index) {
     console.log(toRaw(item), index);
-    // /plan_detail/:id/name/:name
     router.push({
         path: '/plan_detail',
         name: '计划详情',
@@ -50,11 +51,11 @@ function clickPlan_Item(item, index) {
             period: item.period,
             start_date: item.start_date,
             'end-date': item['end-date'],
-            daily_money: item.daily_money,
-            target_money: item.target_money,
-            saved_money: item.saved_money,
+            daily_money: keepTwoDecimalStr(item.daily_money),
+            target_money: keepTwoDecimalStr(item.target_money),
+            saved_money: item.saved_money.toFixed(2),
             picture: item.picture,
-            light_number: item.saved_money / item.daily_money,
+            light_number: Math.floor(item.saved_money.toFixed(2) / item.daily_money),
         }
     })
 }
@@ -102,8 +103,8 @@ function Del_Plan_Item(item) {
                                 <span class="top_right"><span>{{ item.period }} Day</span></span>
                             </div>
                             <div class="ctx middle">
-                                <span class="current">deposited ￥{{ item.saved_money }}</span>
-                                <span class="total">￥{{ item.target_money }}</span>
+                                <span class="current">deposited ￥{{ keepTwoDecimalStr(item.saved_money) }}</span>
+                                <span class="total">￥{{ keepTwoDecimalStr(item.target_money) }}</span>
                             </div>
                             <div class=" ctx foot">
                                 <div class="progress">

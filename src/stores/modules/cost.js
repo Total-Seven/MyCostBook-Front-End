@@ -44,8 +44,8 @@ const store = {
     actions: {
         // 记账页--列表
         async get_bill_list(book_id) {
-            if (this.current_page > this.totalPage) return false
             console.group('get_bill_list,发送网络请求', '当前页数:', this.current_page, '总页数:', this.totalPage);
+            if (this.current_page > this.totalPage && this.totalPage !== 0) return false
             return new Promise(async (resolve, reject) => {
                 const res = await get_list(book_id, this.current_month, this.current_page++)
                 if (res.code == 200) {

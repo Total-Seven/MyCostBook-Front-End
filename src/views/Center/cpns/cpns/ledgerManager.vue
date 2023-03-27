@@ -5,9 +5,12 @@ import { ref, computed, toRaw } from 'vue';
 import { useRouter } from 'vue-router';
 // Utils
 import { createURLObj } from '@/utils';
+import { keepTwoDecimalStr } from '@/utils';
 // 组件
 import myDialog from '@/components/dialog.vue'
-// 
+// Vant
+import { showFailToast } from 'vant'
+import 'vant/es/toast/style'
 // Store
 import useCenterStore from '@/stores/modules/center';
 import { storeToRefs } from 'pinia';
@@ -81,7 +84,10 @@ const update = (id, name, item) => {
 }
 function delBook(id, name, $event) {
     console.log(id, user_default_book_id.value, name, $event.target);
-    if (id == user_default_book_id.value) return
+    if (id == user_default_book_id.value) {
+        showFailToast('默认账本不可删除');
+        return
+    }
     $event.stopPropagation()
     const answer = window.confirm('Do you really want to Delete? Unable to recover!')
     if (!answer) return false
@@ -164,8 +170,8 @@ function watch_input(newV) {
                         </div>
                         <div class="net">￥{{ current_clickBook_total.income - current_clickBook_total.expend }}</div>
                         <div class="asset">
-                            <div class="expend"> ￥<span> {{ current_clickBook_total.expend }}</span></div>
-                            <div class="income"> ￥<span> {{ current_clickBook_total.income }}</span> </div>
+                            <div class="expend"> ￥<span> {{ current_clickBook_total.expend.toFixed(2) }}</span></div>
+                            <div class="income"> ￥<span> {{ current_clickBook_total.income.toFixed(2) }}</span> </div>
                         </div>
                     </div>
 
@@ -173,8 +179,8 @@ function watch_input(newV) {
                 <div class="bottom">
                     <p class="month">本月收支</p>
                     <div class="box">
-                        <div class="btn expend">￥{{ current_clickBook_month.expend }}</div>
-                        <div class="btn income">￥ {{ current_clickBook_month.income }} </div>
+                        <div class="btn expend">￥{{ current_clickBook_month.expend.toFixed(2) }}</div>
+                        <div class="btn income">￥ {{ current_clickBook_month.income.toFixed(2) }} </div>
                     </div>
                 </div>
             </div>

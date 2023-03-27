@@ -1,6 +1,6 @@
 import { toRaw } from "vue";
 import { defineStore } from "pinia";
-import { getUserInfos, addCategory, deleteCategory, modifyCategory, gerAllAcount, addBook, delBook, updateBook, editUserInfos, addAcount, delAccount } from "@/service";
+import { getUserInfos, addCategory, deleteCategory, modifyCategory, gerAllAcount, modifyAcount, addBook, delBook, updateBook, editUserInfos, addAcount, delAccount } from "@/service";
 
 const useCenterStore = defineStore('center', {
     state: () => ({
@@ -172,6 +172,23 @@ const useCenterStore = defineStore('center', {
                     resolve(res.data.insertId)
                     console.timeEnd('post_addAccount')
                     console.groupEnd('post_addAccount,网络请求')
+                }
+                else {
+                    console.log('失败', res);
+                    reject()
+                }
+            })
+
+        },
+        async post_ModifyAccount(data) {
+            console.group('post_ModifyAccount,网络请求')
+            console.time('post_ModifyAccount')
+            return new Promise(async (resolve, reject) => {
+                const res = await modifyAcount(data)
+                if (res.code == 200) {
+                    resolve(res.data)
+                    console.timeEnd('post_ModifyAccount')
+                    console.groupEnd('post_ModifyAccount,网络请求')
                 }
                 else {
                     console.log('失败', res);

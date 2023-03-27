@@ -2,9 +2,11 @@
 import { toRaw, ref, computed } from 'vue'
 // 组件
 import empty from '@/components/empty.vue';
+import topList from './cpns/cpns/topList.vue'
 // Store
 import useChartStore from '@/stores/modules/chart';
 import { storeToRefs } from 'pinia';
+import router from '@/router';
 const chartStore = useChartStore()
 const { data, current_menu, current_tab, current_dateIndex } = storeToRefs(chartStore)
 //
@@ -26,108 +28,13 @@ const isEmpty = computed(() => {
     if (top_array.value == undefined) return true
 })
 console.log(isEmpty.value);
-// 
-const listData = [
-    {
-        icon: 'bangzhushouce.svg',
-        name: 'Food',
-        price: '184.27',
-        percentage: '50.50',
-        bill_nnumber: '6',
-    }, {
-        icon: 'ziyuan22.svg',
-        name: 'Transfer',
-        price: '85.00',
-        percentage: '30.00',
-        bill_nnumber: '20',
-    }, {
-        icon: 'gongwenbao.svg',
-        name: 'Transfer',
-        price: '755.00',
-        percentage: '78.00',
-        bill_nnumber: '15',
-    }, {
-        icon: 'ziyuan42.svg',
-        name: 'Transfer',
-        price: '85.00',
-        percentage: '40.00',
-        bill_nnumber: '2',
-    }, {
-        icon: 'yuechi.svg',
-        name: 'Transfer',
-        price: '5725.00',
-        percentage: '10.00',
-        bill_nnumber: '90',
-    }, {
-        icon: 'shujubiaoge.svg',
-        name: 'Transfer',
-        price: '85.00',
-        percentage: '20.00',
-        bill_nnumber: '15',
-    }, {
-        icon: 'houtaishuju.svg',
-        name: 'Transfer',
-        price: '8.00',
-        percentage: '60.00',
-        bill_nnumber: '10',
-    }, {
-        icon: 'shezhi.svg',
-        name: 'Transfer',
-        price: '35.00',
-        percentage: '55.00',
-        bill_nnumber: '15',
-    }, {
-        icon: 'jinggao.svg',
-        name: 'Transfer',
-        price: '823.00',
-        percentage: '95.00',
-        bill_nnumber: '11',
-    }, {
-        icon: 'shouji-yidongduanxiazai.svg',
-        name: 'Transfer',
-        price: '565.00',
-        percentage: '27.00',
-        bill_nnumber: '50',
-    }
-]
-function getUrl(img) {
-    return new URL(`../../../assets/img/cost/list/other/${img}`, import.meta.url).href
-}
+//
 </script>
 
 <template>
     <div class="top">
         <div id="title">Top</div>
-        <div id="list" v-if="!isEmpty">
-            <template v-for="(item, index) in top_array" :key="index">
-                <div class="item">
-                    <div class="left">
-                        <!-- <img class="pic" :src="getUrl(item.icon)" alt=""> -->
-                        <img :src="item.avatar" alt="">
-                    </div>
-                    <div class="middle">
-                        <div class="middleTop">
-                            <strong class="big">{{ item.billLedger }}</strong>
-                            <span class="percentage">{{ item.percentage }}</span>
-                        </div>
-                        <div class="middleBottom">
-                            <van-progress :percentage="item.percentage" :pivot-text="item.percentage" :show-pivot=false
-                                pivot-color="rgba(66,150,144,1)" stroke-width="6"
-                                color="linear-gradient(to right, rgba(66,150,144,1),rgba(42.47,124.31,118.38,1)" />
-                        </div>
-                    </div>
-                    <div class="right">
-                        <div class="text">
-                            <div class="up">￥{{ item.amount }}</div>
-                            <div class="down">{{ item.number }}</div>
-                        </div>
-                        <div class="icon">
-                            <van-icon name="arrow" size=18 color="#928f8f" />
-                        </div>
-                    </div>
-                </div>
-            </template>
-        </div>
+        <topList :isEmpty="isEmpty" :top_array="top_array" v-if="!isEmpty" />
         <div id="top-empty" v-if="isEmpty">
             <empty v-if="isEmpty">
                 <template #icon>

@@ -1,6 +1,8 @@
 <script setup>
 // utils
 import { createURLObj } from '@/utils';
+// 组件
+import empty from '@/components/empty.vue'
 // router
 import { useRouter } from 'vue-router';
 // 
@@ -48,19 +50,6 @@ function keepTwoDecimalStr(num) {
     }
     return Number(s);
 };
-// const list = [
-//     { icon: 'bangzhushouce.svg', name: 'Upwork', amount: '850.00', date: 'Today', style: { color: 'red' } },
-//     { icon: 'gongwenbao.svg', name: 'Transfer', amount: '85.00', date: 'Yesterday', style: { color: 'green' } },
-//     { icon: 'jinggao.svg', name: 'Paypal', amount: '1,850.00', date: 'Jan 30,2022', style: { color: 'red' } },
-//     { icon: 'shezhi.svg', name: 'Youtube', amount: 850.00, date: 'Today', style: { color: 'green' } },
-//     { icon: 'houtaishuju.svg', name: 'ins', amount: '11.99', date: 'Yesterday', style: { color: 'green' } },
-//     { icon: 'shujuanquan.svg', name: 'Facebook', amount: 850.00, date: 'Jan 30,2022', style: { color: 'red' } },
-//     { icon: 'shouji-yidongduanxiazai.svg', name: 'Upwork', amount: 850.00, date: 'Today' },
-//     { icon: 'shujubiaoge.svg', name: 'Upwork', amount: 850.00, date: 'Jan 30,2022', style: { color: 'red' } },
-//     { icon: 'yuechi.svg', name: 'Upwork', amount: 850.00, date: 'Today', style: { color: 'green' } },
-//     { icon: 'ziyuan42.svg', name: 'Upwork', amount: 850.00, date: 'Yesterday', style: { color: 'red' } },
-//     { icon: 'ziyuan22.svg', name: '', amount: 850.00, date: 'Jan 30,2022', style: { color: 'green' } },
-// ]
 const showPickDate = ref(false)
 const currentDate = ref([dayjs().format('YYYY'), dayjs().format('MM')])
 /** */
@@ -134,7 +123,7 @@ function del_bill(value, item) {
             obj.value.total_income -= keepTwoDecimalStr(value.bills[targetIndex].amount)    //修改总金额
         }
         else if (item.pay_type == 2) {
-            obj.value.total_expense += keepTwoDecimalStr(value.bills[targetIndex].amount)    //修改总金额
+            obj.value.total_expense -= keepTwoDecimalStr(value.bills[targetIndex].amount)    //修改总金额
         }
         value.bills.splice(targetIndex, 1)
         setTimeout(() => { showNotify({ type: 'success', message: '删除成功' }); }, 500);
@@ -172,7 +161,7 @@ function set_style(type) {
                 <div class="right"><span>See More</span></div>
             </div>
         </div>
-        <div class="bills">
+        <div class="bills" v-if="list.length > 0">
             <template v-for="(value, key, index) in list" :key="index">
                 <div class="item">
                     <h3>{{ value.date }}</h3>
@@ -185,7 +174,7 @@ function set_style(type) {
                                 <div class="left">
                                     <div class="picture">
                                         <!-- <img src="../../../../assets/img/cost/list/airbnb.svg" alt=""
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        style="display: block;width: 44px;height:40px"> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                style="display: block;width: 44px;height:40px"> -->
                                         <img src="@/assets/img/cost/list/other/jinggao.svg" alt=""
                                             style="display: block;width: 35px;height:35px">
                                         <!-- <img :src="getUrl(item.icon)" alt="" style="display: block;width: 35px;height:35px"> -->
@@ -210,7 +199,9 @@ function set_style(type) {
                     </template>
                 </div>
             </template>
-
+        </div>
+        <div class="empty" v-else-if="list.length === 0">
+            <empty />
         </div>
     </div>
 </template>
@@ -332,6 +323,11 @@ function set_style(type) {
             }
         }
 
+    }
+
+    .empty {
+        display: grid;
+        margin-top: 100px;
     }
 }
 </style>

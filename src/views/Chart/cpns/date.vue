@@ -1,8 +1,6 @@
 <script setup>
 // Vue
 import { ref, computed, watch, toRaw } from 'vue';
-// Dayjs
-import dayjs from 'dayjs'
 // Store
 import useChartStore from '@/stores/modules/chart';
 import { storeToRefs } from 'pinia';
@@ -26,7 +24,14 @@ watch(date_arr, (newV, oldV) => {
 const now = computed(() => {
     return date_arr.value[current_dateIndex.value] || 'this Month'
 })
-
+const canIleft = computed(() => {
+    if (date_arr.value.findIndex(el => el == now.value) === 0) return false
+    else return true
+})
+const canIright = computed(() => {
+    if (date_arr.value.findIndex(el => el == now.value) === date_arr.value.length - 1) return false
+    else return true
+})
 // 点击事件
 const decreaseShift = () => {
     if (current_dateIndex.value == 0) return
@@ -41,11 +46,11 @@ const IncreaseShift = () => {
 <template>
     <div class="date">
         <div class=" box left" @click="decreaseShift">
-            <img src="../img/left.svg" alt="">
+            <img v-if="canIleft" src="../img/left.svg" alt="">
         </div>
         <div class=" box time">{{ now }}</div>
         <div class=" box right" @click="IncreaseShift">
-            <img src="../img/right.svg" alt="">
+            <img v-if="canIright" src="../img/right.svg" alt="">
         </div>
     </div>
 </template>

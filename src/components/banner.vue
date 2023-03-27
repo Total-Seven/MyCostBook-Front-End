@@ -22,7 +22,7 @@
 .banner {
     width: 100vw;
     position: relative;
-    z-index: 3;
+    z-index: 1;
     top: 81px;
     display: flex;
     justify-content: space-between;

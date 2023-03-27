@@ -1,5 +1,6 @@
 import LAxios from '../request/index'
 
+// User
 export function getUserInfos() {
     return LAxios.get({
         url: `/user/get_userinfo`,
@@ -14,6 +15,7 @@ export function editUserInfos(data) {
         data,
     })
 }
+// Category
 export function addCategory(data) {
     return LAxios.post({
         url: `/category/add`,
@@ -41,6 +43,7 @@ export function modifyCategory(data) {
         data,
     })
 }
+// Account
 export function gerAllAcount() {
     return LAxios.get({
         url: `/account/getAllAccount`,
@@ -49,6 +52,15 @@ export function gerAllAcount() {
 export function addAcount(data) {
     return LAxios.post({
         url: `/account/add`,
+        Headers: {
+            "content-type": "application/x-www-form-urlencoded;charset=UTF-8"
+        },
+        data,
+    })
+}
+export function modifyAcount(data) {
+    return LAxios.post({
+        url: `/account/update`,
         Headers: {
             "content-type": "application/x-www-form-urlencoded;charset=UTF-8"
         },
@@ -64,6 +76,7 @@ export function delAccount(data) {
         data,
     })
 }
+// Book
 export function addBook(data) {
     return LAxios.post({
         url: `/book/add`,

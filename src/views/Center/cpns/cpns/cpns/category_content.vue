@@ -34,20 +34,6 @@ let newArr = computed(() => props.types)
 const click = (el, item, index, hide) => {
     newArr.value[index].hide == false ? newArr.value[index].hide = true : newArr.value[index].hide = false   // 改变显示属性
 }
-//保留两位小数
-function keepTwoDecimalStr(num) {
-    const result = Number(num.toString().match(/^\d+(?:\.\d{0,2})?/));
-    let s = result.toString();
-    let rs = s.indexOf('.');
-    if (rs < 0) {
-        rs = s.length;
-        s += '.';
-    }
-    while (s.length <= rs + 2) {
-        s += '0';
-    }
-    return Number(s);
-};
 /**
  * 一级分类 右侧的金额
  */
@@ -78,10 +64,23 @@ const subMit_name = ref()      // 表单提交的name
 let closeFn = (status, firstType_index, category_id, newValue) => { }
 const clickIten = (item, iten, index, indey, $event) => {
     if (!isClicktoEdit.value) {
-        emit('notify:itenAmount', `${iten.name} : $${iten.amount}`)
-        return
+        if ($event.target.innerText == '+') {
+            // 弹出popUp
+            showPopUpBottom.value = true
+            // 
+            type.value = item.type
+            type_name.value = item.type == 1 ? 'Expend' : 'Income'
+            first_type_name.value = item.name
+            first_type_id.value = item.id
+        }
+        else {
+            // 显示分类金额在title上
+            emit('notify:itenAmount', `${iten.name} : $${iten.amount}`)
+            return
+        }
     }
     if ($event.target.innerText != '+') {   //textContent
+        // 修改名称
         default_placeholder.value = iten.name
         isShow_modifyDiaglog.value = true
         closeFn = (status, newValue = newCategoryName.value, firstType_index = index, category_index = indey, category_id) => {
@@ -99,15 +98,6 @@ const clickIten = (item, iten, index, indey, $event) => {
             }
         }
         console.log(item, index, iten, closeFn);
-    }
-    else if ($event.target.innerText == '+') {
-        // 弹出popUp
-        showPopUpBottom.value = true
-        // 
-        type.value = item.type
-        type_name.value = item.type == 1 ? 'Expend' : 'Income'
-        first_type_name.value = item.name
-        first_type_id.value = item.id
     }
 }
 // 关闭对话框（修改类别名）
@@ -143,6 +133,7 @@ const del_category = (iten, item) => {
     delete_category_info.value = createURLObj({ id: iten.id })
     centerStore.Post_deleteCategory(iten.id, item.id)
 }
+
 </script>
 
 <template>
@@ -150,7 +141,7 @@ const del_category = (iten, item) => {
         <div class="innerItem">
             <template v-for="(item, index) in types" :key="index">
                 <div class="item">
-                    <div class="title" @click="click($event, item, index, hide)" :hide="item.hide">
+                    <div class="title" v-Trriger @click="click($event, item, index, hide)" :hide="item.hide">
                         <div class="left">
                             <div><img src="https://s2.loli.net/2023/02/10/cZkBewG65J3SjHr.png" alt=""
                                     :class="{ imgshark: isClicktoEdit && item.hide == false }">
@@ -160,7 +151,7 @@ const del_category = (iten, item) => {
                             {{ item.name }}
                         </div>
                         <div class="right">
-                            <span>{{ TypeName }}￥{{ keepTwoDecimalStr(item.amount) }}</span>
+                            <span>{{ TypeName }}￥{{ item.amount.toFixed(2) }}</span>
                         </div>
                     </div>
                     <div class="list" v-if="!item.hide" :class="{ animationIn: !item.hide }">

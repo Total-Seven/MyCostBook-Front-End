@@ -1,5 +1,8 @@
 <script setup>
 import banner from '@/components/banner.vue';
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 </script>
 
 <template>
@@ -12,7 +15,7 @@ import banner from '@/components/banner.vue';
                 <span>Profile</span>
             </template>
             <template #right>
-                <div class="inner">
+                <div class="inner" @click="router.push('/test')">
                     <img class="calendar" src="@/assets/img/Profile_Center/calendar.svg" alt="">
                 </div>
             </template>

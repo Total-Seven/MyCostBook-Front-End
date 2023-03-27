@@ -6,15 +6,19 @@ import { showSuccessToast, showFailToast } from 'vant'
 import 'vant/es/toast/style'
 // Utils
 import dayjs from 'dayjs'
+import getRefGroup from '@/utils/getRefGroup'
 // 组件
 // Router
 import { useRoute, useRouter } from 'vue-router'
 import { createURLObj } from '@/utils'
 // Store
+import useLoginStore from '@/stores/modules/login';
 import useCostStore from '@/stores/modules/cost'
 import { storeToRefs } from 'pinia'
 const costStore = useCostStore()
 const { update_plan_info } = storeToRefs(costStore)
+const loginStore = useLoginStore()
+const { plan_list } = storeToRefs(loginStore)
 /**
 * var
 */
@@ -45,24 +49,56 @@ const handler = handle_PlanDetail(dayjs(route.query.start_date).add(8, 'hour'), 
 
 // 数组数组
 const detail_arr = ref(handler())
+let scrool_index = 0
 // 计算已存的个数
-for (let index = 0; index < detail_arr.value.length; index++) {
+_for: for (let index = 0; index < detail_arr.value.length; index++) {
     const element = detail_arr.value[index];
-    console.log(detail_arr.value[index]);
     if (index < route.query.light_number) element.active = true
+    if (index >= route.query.light_number) {
+        scrool_index = index
+        break _for;
+    }
+}
+const { group, handle } = getRefGroup()
+const Ref_Content = ref()
+let isToBottom = true
+
+function clickSrcoolTo() {
+    const Top_Content = Ref_Content.value.offsetTop // 获取Content距离顶部的高度
+    // 跳转
+    if (isToBottom) {
+        Ref_Content.value.scroll({
+            top: group[scrool_index].offsetTop - Top_Content - 100 - 20, // 减去Content距离顶部的高度、卡片的高度、还不够再减20
+            behavior: "smooth"
+        });
+    }
+    else if (!isToBottom) {
+        Ref_Content.value.scroll({
+            top: 0, // 减去Content距离顶部的高度、卡片的高度、还不够再减20
+            behavior: "smooth"
+        });
+    }
+    console.warn(Top_Content);
+    isToBottom == true ? isToBottom = false : isToBottom = true // 修改状态
 }
 // 点击事件 翻页 加钱
 function clickItem(item, index, $event) {
-    console.log(item.active);  //undefined false
 
     function sendUpdate(mode) {
         if (!mode) return
         update_plan_info.value = createURLObj({ id: route.query.id, daily_money: route.query.daily_money, mode: mode })
         costStore.Update_plan()
             .then(data => {
+                const targetIndex = plan_list.value.findIndex(item => item.id == route.query.id)
                 // 修改总金额
-                if (mode == 1) Deposited.value += Number(route.query.daily_money)
-                else if (mode == 2) Deposited.value -= Number(route.query.daily_money)
+                if (mode == 1) {
+                    plan_list.value[targetIndex].saved_money += keepTwoDecimalStr(route.query.daily_money)
+                    Deposited.value = keepTwoDecimalStr(Deposited.value + keepTwoDecimalStr(route.query.daily_money))
+                }
+                else if (mode == 2) {
+                    plan_list.value[targetIndex].saved_money -= keepTwoDecimalStr(route.query.daily_money)
+                    Deposited.value = keepTwoDecimalStr(Deposited.value - keepTwoDecimalStr(route.query.daily_money))
+                }
                 else throw Error('翻页出错了')
                 // 修改总金额 End
                 showSuccessToast('成功')
@@ -73,9 +109,11 @@ function clickItem(item, index, $event) {
             })
     }
     if (item.active == undefined || item.active == false) {
+        // 翻页点亮
         sendUpdate(1)
     }
     else if (item.active == true) {
+        // 取消
         sendUpdate(2)
     }
 }
@@ -93,10 +131,13 @@ function keepTwoDecimalStr(num) {
     }
     return Number(s);
 };
-const persentage = computed({
-    get() {
-        return keepTwoDecimalStr(Deposited.value / total.value)
-    },
+// 计算属性 保留两位小数
+const persentage = computed(() => {
+    return keepTwoDecimalStr(keepTwoDecimalStr((Deposited.value / total.value)) * 100)
+},
+)
+const remaining = computed(() => {
+    return keepTwoDecimalStr(route.query.target_money - route.query.saved_money)
 })
 </script>   
 
@@ -121,14 +162,13 @@ const persentage = computed({
             </div>
             <div class="progress">
                 <div class="box top">
-                    <span>Deposited ￥{{ Deposited }}</span><span>remaining ￥{{ route.query.target_money -
-                        route.query.saved_money }}</span>
+                    <span>Deposited ￥{{ Deposited }}</span><span>remaining ￥{{ remaining }}</span>
                 </div>
                 <div class="middle">
                     <div class="progresss">
-                        <van-progress inactive :percentage="persentage * 100" />
+                        <van-progress inactive :percentage="persentage" />
                     </div>
-                    <span>{{ persentage * 100 }}%</span>
+                    <span>{{ persentage }}%</span>
                 </div>
                 <div class="box bottom">
                     <span>{{ dayjs(route.query.start_date).format('YYYY-MM-DD') }} / {{
@@ -139,16 +179,17 @@ const persentage = computed({
         </div>
         <div class="line"> </div>
         <div class="title"><span>Deposit Detail</span>
-            <div class="icon"><img src="@/assets/img/tabbar/chart.png" alt=""></div>
+            <div class="icon"><img @click="clickSrcoolTo" src="@/assets/img/home/SavePlan/shangxiafanjiantou.svg" alt="">
+            </div>
         </div>
-        <div class="content">
-            <template v-for="(item, index) in         detail_arr" :key="index">
-                <div class="item" :class="{ flip: item.active, 'style-filled': item.active }"
+        <div class="content" ref="Ref_Content">
+            <template v-for="(item, index) in detail_arr" :key="index">
+                <div class="item" :ref="handle" :class="{ flip: item.active, 'style-filled': item.active }"
                     @click="clickItem(item, index)">
                     <div class="amount">
                         ￥ <span>{{ item.amount }}</span>
                     </div>
-                    <div class="total">total ￥<span>{{ item.total }}</span></div>
+                    <div class="total">total ￥<span>{{ item.total.toFixed(2) }}</span></div>
                     <div class="date">{{ item.date }}</div>
                 </div>
             </template>
@@ -352,8 +393,14 @@ const persentage = computed({
         }
 
         .icon {
-            width: 35px;
-            height: 35px;
+            padding: 5px;
+            background-color: #e8e8e8AA;
+            border-radius: 50px;
+
+            img {
+                width: 35px;
+                height: 35px;
+            }
         }
     }
 

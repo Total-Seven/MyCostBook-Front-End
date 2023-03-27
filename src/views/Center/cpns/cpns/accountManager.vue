@@ -1,6 +1,9 @@
 <script setup>
 // Vue
-import { ref, computed, toRaw } from 'vue';
+import { ref, computed, toRaw, watch } from 'vue';
+// Vant
+import { showSuccessToast } from 'vant';
+import 'vant/es/toast/style'
 // 路由
 import { useRouter } from 'vue-router';
 // Util
@@ -26,32 +29,56 @@ function account_detail(item, index) {
 // PopUp
 const showPopUpBottom = ref(false)
 const clickPopUp = () => {
+    text_popupTtile.value = 'Create Account'
     showPopUpBottom.value = true
 }
+// 
+const subMit_Id = ref()
 const subMit_name = ref()
+const subMit_amount = ref()
+
+// 提交
 function submit() {
-    add_account_info.value = createURLObj({ name: subMit_name.value, pay_type: 0, amount: 666 })
-    centerStore.post_addAccount().then(res => {
-        user_info.value.account.push({ id: res, name: subMit_name.value, pay_type: 0, user_id: user_info.value.userInfo.id, amount: 666 })
-    })
-    showPopUpBottom.value = false
-}
-// Del
-const beforeClose = ({ name, position }) => {
-    console.log(name, position);
-    switch (position) {
-        case 'left':
-        case 'cell':
-        case 'outside':
-            return true;
-        case 'right':
-        // return new Promise((resolve) => {
-        //     showConfirmDialog({
-        //         title: '确定删除吗？',
-        //     }).then(resolve);
-        // });
+    if (text_popupTtile.value === 'Modify Account') {
+        const modifyAccount_info = createURLObj({ id: subMit_Id.value, name: subMit_name.value, amount: subMit_amount.value })
+        centerStore.post_ModifyAccount(modifyAccount_info).then(data => {
+            console.log('成功🔥', data);
+            // 修改视图
+            const targetIndex = user_info.value.account.findIndex(el => {
+                return el.id === subMit_Id.value
+            })
+            user_info.value.account[targetIndex].name = subMit_name.value
+            user_info.value.account[targetIndex].amount = subMit_amount.value
+            // 还原
+            showSuccessToast('修改成功');
+            setTimeout(() => { showPopUpBottom.value = false }, 500);
+        }).catch(reason => {
+            showSuccessToast('失败!');
+            console.error(reason)
+        })
+    }
+    else {
+        add_account_info.value = createURLObj({ name: subMit_name.value, pay_type: 0, amount: subMit_amount.value })
+        centerStore.post_addAccount().then(res => {
+            user_info.value.account.push({ id: res, name: subMit_name.value, pay_type: 0, user_id: user_info.value.userInfo.id, amount: subMit_amount.value })
+        })
+        setTimeout(() => {
+            showPopUpBottom.value = false
+        }, 500);
     }
 }
+
+// 打开修改账户弹出层
+const popModifyUp = (item, index) => {
+    text_popupTtile.value = 'Modify Account'
+    subMit_Id.value = item.id
+    subMit_name.value = item.name
+    subMit_amount.value = item.amount
+    console.log(`%c ${item}, ${index}`, 'background:green');
+    showPopUpBottom.value = true
+}
+
+// 删除账户
 function del(item, index) {
     console.log('del', index, item);
     del_account_info.value = createURLObj({ id: item.id })
@@ -63,28 +90,15 @@ function del(item, index) {
         user_info.value.account.splice(targetIndex, 1)
     })
 }
-// Edit
-const Ref_SwipeCell = ref()
-const isAllSwipe = ref(false)
-function edit() {
-    Ref_SwipeCell.value.open()
-    isAllSwipe.value = true
+
+const text_popupTtile = ref('Create Account')  //创建/修改账户
+
+
+function clearPopup() {
+    subMit_name.value = undefined
+    subMit_amount.value = undefined
 }
 
-
-function keepTwoDecimalStr(num) {
-    const result = Number(num.toString().match(/^\d+(?:\.\d{0,2})?/));
-    let s = result.toString();
-    let rs = s.indexOf('.');
-    if (rs < 0) {
-        rs = s.length;
-        s += '.';
-    }
-    while (s.length <= rs + 2) {
-        s += '0';
-    }
-    return Number(s);
-};
 </script>
 
 <template>
@@ -92,7 +106,7 @@ function keepTwoDecimalStr(num) {
         <div class="banner">
             <div class="left" @click="router.back()"><van-icon name="arrow-left" size="16px" /></div>
             <div class="middle">Asset Management</div>
-            <div class="right" @click="edit"><van-icon name="edit" size="20" /></div>
+            <div class="right" @click="edit"></div>
         </div>
         <div class="top">
             <div class="box toop">
@@ -128,7 +142,7 @@ function keepTwoDecimalStr(num) {
             </div>
             <div class="list">
                 <template v-for="(item, index) in test">
-                    <van-swipe-cell :before-close="beforeClose" name="删除" ref="Ref_SwipeCell" :stop-propagation="true">
+                    <van-swipe-cell name="删除" :stop-propagation="true">
                         <div class="item" @click="account_detail(item, index)">
                             <div class="left">
                                 <div><img src="https://s2.loli.net/2023/02/10/cZkBewG65J3SjHr.png" alt=""></div>
@@ -142,7 +156,8 @@ function keepTwoDecimalStr(num) {
                         </div>
                         <template #right class="swipe-button-inner">
                             <van-button class="swipe-button" round type="danger" text="删除" @click="del(item, index)" />
-                            <van-button class="swipe-button" round color="#429690" type="primary" text="修改" />
+                            <van-button @click="popModifyUp(item, index)" class="swipe-button" round color="#429690"
+                                type="primary" text="修改" />
                         </template>
                     </van-swipe-cell>
                 </template>
@@ -152,12 +167,13 @@ function keepTwoDecimalStr(num) {
             </div>
 
         </div>
-        <van-popup class="popup" v-model:show="showPopUpBottom" position="bottom" :style="{ height: '30%' }" round>
+        <van-popup class="popup" @close="clearPopup" v-model:show="showPopUpBottom" position="bottom"
+            :style="{ height: '30%' }" round>
             <div class="inner">
                 <div class="banner">
                     <div class="left"><van-icon name="arrow-left" size="22" /></div>
                     <div class="middle">
-                        <h2>Create Account</h2>
+                        <h2 v-html="text_popupTtile"></h2>
                     </div>
                 </div>
                 <div class="conten">
@@ -165,7 +181,10 @@ function keepTwoDecimalStr(num) {
                         <img src="https://s2.loli.net/2023/02/10/cZkBewG65J3SjHr.png" alt="">
                         <div class="iright">
                             <div class="name type">
-                                <input type="text" v-model="subMit_name" placeholder="&ensp; Please enter a category name">
+                                <input type="text" v-model="subMit_name" placeholder="&ensp; Please enter a account name">
+                            </div>
+                            <div class="amount type">
+                                <input type="number" v-model="subMit_amount" placeholder="&ensp; amount">
                             </div>
                         </div>
                     </div>
@@ -193,7 +212,7 @@ function keepTwoDecimalStr(num) {
 
 .accountMananger {
     box-sizing: border-box;
-    padding: 30px 20px 10px;
+    padding: 30px 20px 60px;
     position: fixed;
     z-index: 4;
     width: 100vw;
@@ -314,6 +333,8 @@ function keepTwoDecimalStr(num) {
     .content {
         margin-top: 25px;
         width: 100%;
+        overflow-y: auto;
+
 
         .titleBanner {
             height: 40px;
@@ -442,7 +463,7 @@ function keepTwoDecimalStr(num) {
             }
 
             .conten {
-                padding: 20px 10px 0 10px;
+                padding: 30px 10px 0 10px;
 
                 .icon {
                     display: flex;
@@ -451,17 +472,18 @@ function keepTwoDecimalStr(num) {
                         background-color: #bfbfbfAA;
                         border-radius: 50px;
                         width: 100px;
-                        width: 100px;
                     }
 
                     .iright {
                         .flex();
-                        // flex: 1;
+                        flex-direction: column;
                         margin-left: 20px;
 
                         input {
                             width: 60vw;
-                            height: 50px;
+                            height: 40px;
+                            margin-bottom: 10px;
+                            text-align: center;
                             border-radius: 24px;
                             background-color: #bfbfbfDD;
                             border: 0;

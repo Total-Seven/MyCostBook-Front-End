@@ -301,6 +301,20 @@ function charge(item, index) {
      *  *  前端根据subscription字段 选择不渲染此清单，而是转入已完成的地方。 
      *  */
 }
+
+/**格式化金额 -- 随勾选数量而变 */
+const itemAmount = computed(() => {
+    return item => {
+        let total = 0
+        // ❌ 用 reduce就不行 , forEach可以 。
+        item.goods_list.forEach(el => {
+            if (el.checked) {
+                total += Number(el.amount)
+            }
+        })
+        return total
+    }
+})
 </script>
 
 <template>
@@ -336,7 +350,7 @@ function charge(item, index) {
                                             <div class="money">
                                                 <img src="../img/money.svg" alt="">
                                             </div>
-                                            <div class="amount">￥{{ item.total }}</div>
+                                            <div class="amount">￥{{ itemAmount(item).toFixed(2) }}</div>
                                         </div>
                                     </div>
                                 </div>

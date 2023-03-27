@@ -7,6 +7,8 @@ import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, onBeforeMou
 // 组件
 // import observer from './cpns/observer.vue'
 import infiniteScroll from './cpns/infiniteScroll.vue'
+import ws from './cpns/websocket.vue'
+
 // import IntersectionObserver from './cpns/IntersectionObserver.vue';
 // Store
 
@@ -90,27 +92,29 @@ function submit() {
 
 <template>
     <div class="tset">
+        <!-- websocket -->
+        <ws />
         <!-- 文件上传 -->
-        <div class="loadup">
-            <h1>Uploader</h1>
-            <div class="load">
-                <van-uploader :after-read="afterRead" />
-            </div>
-            <div class="loading">
-                <input @change="fileChange" type="file" name="file" id="file" />
-                <img style="position: relative;left: 30px; width: 200px;" :src="imgbase64" alt="">
-                <button @click="submit">提交</button>
-                <h4>{{ precentage }}%</h4>
-            </div>
-        </div>
+        <!-- <div class="loadup">
+                <h1>Uploader</h1>
+                <div class="load">
+                    <van-uploader :after-read="afterRead" />
+                </div>
+                <div class="loading">
+                    <input @change="fileChange" type="file" name="file" id="file" />
+                    <img style="position: relative;left: 30px; width: 200px;" :src="imgbase64" alt="">
+                    <button @click="submit">提交</button>
+                    <h4>{{ precentage }}%</h4>
+                </div>
+                </div> -->
         <br><br><br><br>
-        <hr>
+        <!-- <hr> -->
         <!-- 观察者 -->
         <!-- <IntersectionObserver /> -->
         <!-- 无限滚动 -->
         <br><br><br><br>
-        <hr>
-        <infiniteScroll />
+        <!-- <hr> -->
+        <!-- <infiniteScroll /> -->
     </div>
 </template>
 

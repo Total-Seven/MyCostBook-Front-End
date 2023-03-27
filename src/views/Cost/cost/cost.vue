@@ -25,12 +25,6 @@ var { obj, isHiddenUser, current_page, current_month, reach150, transform_bill_i
 const tabBarStore = useTabBarStore()
 const { isShowBigButton, isShowBoundaries, tabBar } = storeToRefs(tabBarStore)
 
-
-
-
-
-
-
 // Ref
 const Ref_cost = ref()
 const Ref_banner = ref()
@@ -106,6 +100,7 @@ function changemonth(month) {
     current_month.value = month
     current_page.value = 1
     costStore.get_bill_list(book_id, month).then(res => {
+        if (!res) return
         obj.value.username = res.data.username
         obj.value.total_expense = res.data.total_expense
         obj.value.total_income = res.data.total_income

@@ -124,6 +124,14 @@ const router = createRouter({
         if (res) next()
       }
     },
+    {
+      path: '/categoryStatistics:ledger',
+      name: '统计分类',
+      component: () => import('@/views/Chart/cpns/cpns/statisticsCategory.vue'),
+      meta: {
+        is_hidden_tabbar: true,
+      },
+    },
     // plan
     {
       path: '/Plan',

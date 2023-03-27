@@ -8,16 +8,11 @@ import useChartStore from '@/stores/modules/chart';
 import { storeToRefs } from 'pinia';
 const chartStore = useChartStore()
 const { menu, current_menu, tab, data, current_tab, current_dateIndex } = storeToRefs(chartStore)
-// watch([menu, tab], ([menuNewV, tabNewV], [oldV1, oldV2]) => {
-//     console.log('这里是饼图：', menuNewV, tabNewV);
-// })
+
 const date_arr = computed(() => {
     return data.value[current_menu.value][current_tab.value].time  // 后端返回可选择的日期（用户有账单记录的）
 })
-// const current_key = ref()
-// watch(date_arr, (newV) => {
-//     current_key.value = date_arr.value[current_dateIndex.value]
-// })
+
 const current_key = computed(() => {
     return date_arr.value[current_dateIndex.value]
 })
@@ -28,13 +23,6 @@ const pie_obj = computed(() => {
 const pie_array = computed(() => {
     return pie_obj.value[current_key.value]
 })
-// const pie_array = reactive([])
-// watch(date_arr, (newV) => {
-//     pie_array.value = pie_obj.value[current_key.value]
-// })
-// watch(tab, (newV, oldV) => {
-//     console.log('这里是饼图：', newV);
-// }, { deep: true })
 
 //
 const chartOption2 = computed(() => ({
@@ -79,6 +67,7 @@ const chartOption2 = computed(() => ({
     },
     plotOptions: {
         pie: {
+            allowPointSelect: true,
             innerSize: 100,
             depth: 30, // 图表的全深比，即为3D图X，Y轴的平面点固定，以图的Z轴原点为起始点,
             borderColor: 'transparent',
@@ -87,11 +76,12 @@ const chartOption2 = computed(() => ({
                 enabled: true,
                 // 通过 format 或 formatter 来格式化数据标签显示
                 // format: '<b>{point.name}</b>: {point.percentage:.1f} %',
-                format: '{point.name}'
+                format: `<strong style="background-color:transparent;color:#333;font-size:16px">{point.name}</strong>`,
                 // formatter: function () {
                 //     //this 为当前的点（扇区）对象，可以通过  console.log(this) 来查看详细信息
                 //     return this.name + '，占比' + this.percentage + '%</span>';
                 // }
+                style: { textOutline: 'none' }
             }
         },
     },

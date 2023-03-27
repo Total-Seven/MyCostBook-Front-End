@@ -39,22 +39,21 @@ const useLoginStore = defineStore('login', {
         },
         PostLogin() {
             console.group('Login,发送网络请求');
-            console.log('...loading',);
             return new Promise(async (resolve, reject) => {
                 this.isShowanimation = true
                 const res = await loginOrRegister('login', this.submit_login)
                 if (res.code == 200) {
                     this.user_info.infos = res.data.userInfo   // ❌❌❌
-                    function del_shooping_book(raw_arr) {
-                        console.log(raw_arr);
-                        const targetIndex = raw_arr.findIndex(el => {
-                            return el.name == '购物清单'
-                        })
-                        return raw_arr.splice(targetIndex - 1, 1)
-                    }
-                    this.books = del_shooping_book(res.data.books)
+                    // function del_shooping_book(raw_arr) {
+                    //     console.log(raw_arr);
+                    //     const targetIndex = raw_arr.findIndex(el => {
+                    //         return el.name == '购物清单'
+                    //     })
+                    //     return raw_arr.splice(targetIndex - 1, 1)
+                    // }
+                    // this.books = del_shooping_book(res.data.books)
+                    this.books = res.data.books
                     // this.books = res.data.books
-                    console.warn(res.data.books);
                     this.category_list = res.data.category_list
                     this.all_cg = res.data.all_cg
                     this.plan_list = res.data.plan
@@ -65,7 +64,6 @@ const useLoginStore = defineStore('login', {
                     this.user_info.debt = res.data.debt
                     this.user_info.saved_money = res.data.Saved_Money
                     this.user_info.budget = res.data.userInfo.budget
-                    console.log('成功返回', res);
                     resolve(res)
                     this.isShowanimation = false
                     console.log('!!!,请求成功🔥');
