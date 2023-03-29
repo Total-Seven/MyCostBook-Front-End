@@ -2,7 +2,7 @@ import axios from 'axios'
 
 import { rabbit_URL, TimeOut } from './config'
 
-import useLoginStore from '@/stores/modules/login'
+import useMainStore from '@/stores/modules/main'
 
 
 class LAxios {
@@ -17,16 +17,16 @@ class LAxios {
                 authorization: sessionStorage.getItem('token')
             }
             // 加载动画
-            useLoginStore().isShowPlaneLoading = true
+            useMainStore().isShowPlaneLoading = true
             return config
         }, err => {
             return err
         })
         this.instance.interceptors.response.use(config => {
-            useLoginStore().isShowPlaneLoading = false
+            useMainStore().isShowPlaneLoading = false
             return config
         }, err => {
-            useLoginStore().isShowPlaneLoading = false
+            useMainStore().isShowPlaneLoading = false
             return err
         })
     }

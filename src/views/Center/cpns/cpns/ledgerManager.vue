@@ -1,29 +1,27 @@
 <script setup>
 // Vue
-import { ref, computed, toRaw } from 'vue';
+import { ref, computed } from 'vue';
 // Router
 import { useRouter } from 'vue-router';
 // Utils
 import { createURLObj } from '@/utils';
-import { keepTwoDecimalStr } from '@/utils';
 // 组件
 import myDialog from '@/components/dialog.vue'
 // Vant
 import { showFailToast } from 'vant'
 import 'vant/es/toast/style'
 // Store
+import useMainStore from '@/stores/modules/main';
 import useCenterStore from '@/stores/modules/center';
 import { storeToRefs } from 'pinia';
 const centerStore = useCenterStore()
-const { user_info,
-    add_book_info,
-    del_book_info,
-    update_book_info, user_default_book_id } = storeToRefs(centerStore)
+const mainStore = useMainStore()
+const { user } = storeToRefs(mainStore)
 // 
 const router = useRouter()
 
 const props = defineProps({
-    test: {
+    data: {
         type: Object,
         default: () => { }
     },
@@ -33,7 +31,7 @@ const props = defineProps({
     }
 })
 const data = computed(() => {
-    return props.test
+    return props.data
 })
 function del_shooping_book(raw_arr) {
     console.log(raw_arr);
@@ -54,6 +52,7 @@ const isimgshark = ref(false)
 const isClickEdit = () => {
     isimgshark.value == true ? isimgshark.value = false : isimgshark.value = true
 }
+const default_book_id = user.value.userInfo.default_book_id
 
 /**
  * detail 
@@ -69,6 +68,7 @@ const current_clickBook_month = ref({})
  */
 const default_placeholder = ref('')
 const update = (id, name, item) => {
+    console.warn(id, name, item);
     // 编辑状态以外的点击
     if (isimgshark.value == false) {
         current_clickBook_name.value = name
@@ -83,8 +83,8 @@ const update = (id, name, item) => {
     showDialog.value = true
 }
 function delBook(id, name, $event) {
-    console.log(id, user_default_book_id.value, name, $event.target);
-    if (id == user_default_book_id.value) {
+    console.log(id, default_book_id, name, $event.target);
+    if (id == default_book_id) {
         showFailToast('默认账本不可删除');
         return
     }
@@ -92,12 +92,12 @@ function delBook(id, name, $event) {
     const answer = window.confirm('Do you really want to Delete? Unable to recover!')
     if (!answer) return false
     console.log(id, name);
-    del_book_info.value = createURLObj({ id: id })
-    centerStore.post_delBook().then(res => {
-        const targetIndex = user_info.value.books.findIndex(item => {
+    const del_book_info = createURLObj({ id: id })
+    centerStore.post_delBook(del_book_info).then(res => {
+        const targetIndex = user.value.books.findIndex(item => {
             return item.id == id
         })
-        user_info.value.books.splice(targetIndex, 1)
+        user.value.books.splice(targetIndex, 1)
         isimgshark.value == true ? isimgshark.value = false : isimgshark.value = true
     })
 }
@@ -106,9 +106,9 @@ const showPopUpBottom = ref()
 const subMit_name = ref()
 const subMit_id = ref()
 function submit() {
-    add_book_info.value = createURLObj({ name: subMit_name.value, book_type: 0 })
-    centerStore.post_addBook().then(res => {
-        user_info.value.books.push({ id: res, name: subMit_name.value, book_type: 0 })
+    const add_book_info = createURLObj({ name: subMit_name.value, book_type: 0 })
+    centerStore.post_addBook(add_book_info).then(res => {
+        user.value.books.push({ id: res, name: subMit_name.value, book_type: 0 })
     })
     showPopUpBottom.value = false
 }
@@ -136,15 +136,15 @@ function Close(action) {
         return
     }
     else if (action == 'confirm') {
-        update_book_info.value = createURLObj({ id: subMit_id.value, name: subMit_name.value })
+        const update_book_info = createURLObj({ id: subMit_id.value, name: subMit_name.value })
         //
-        centerStore.post_updateBook()
+        centerStore.post_updateBook(update_book_info)
             .then(res => {
                 // 
-                const targetIndex = user_info.value.books.findIndex(item => {
+                const targetIndex = user.value.books.findIndex(item => {
                     return item.id == subMit_id.value
                 })
-                user_info.value.books[targetIndex].name = subMit_name.value
+                user.value.books[targetIndex].name = subMit_name.value
                 showDialog.value = false
                 isimgshark.value == true ? isimgshark.value = false : isimgshark.value = true
             })
@@ -166,7 +166,7 @@ function watch_input(newV) {
                             {{ current_clickBook_name }}
                         </div>
                         <div class="user">
-                            {{ user_info.userInfo.username }}
+                            {{ user.userInfo.username }}
                         </div>
                         <div class="net">￥{{ current_clickBook_total.income - current_clickBook_total.expend }}</div>
                         <div class="asset">

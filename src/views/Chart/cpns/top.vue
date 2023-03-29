@@ -1,12 +1,11 @@
 <script setup>
-import { toRaw, ref, computed } from 'vue'
+import { computed } from 'vue'
 // 组件
 import empty from '@/components/empty.vue';
 import topList from './cpns/cpns/topList.vue'
 // Store
 import useChartStore from '@/stores/modules/chart';
 import { storeToRefs } from 'pinia';
-import router from '@/router';
 const chartStore = useChartStore()
 const { data, current_menu, current_tab, current_dateIndex } = storeToRefs(chartStore)
 //
@@ -27,7 +26,6 @@ const top_array = computed(() => {
 const isEmpty = computed(() => {
     if (top_array.value == undefined) return true
 })
-console.log(isEmpty.value);
 //
 </script>
 

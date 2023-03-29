@@ -1,5 +1,6 @@
 <script setup>
-import { ref, onMounted, computed, toRaw } from 'vue';
+import { ref, reactive, onMounted, computed, toRaw, watch } from 'vue';
+import gsap from 'gsap'
 // 组件
 import empty from '@/components/empty.vue';
 // Vant
@@ -11,6 +12,7 @@ import 'vant/es/notify/style'
 import usePlanStore from '@/stores/modules/plan';
 import { storeToRefs } from 'pinia';
 import { createURLObj } from '@/utils';
+import { get } from 'vant/lib/utils';
 const planStore = usePlanStore()
 const { shopping_list, delete_ShoppingList_info, del_goods_info_id } = storeToRefs(planStore)
 
@@ -315,6 +317,7 @@ const itemAmount = computed(() => {
         return total
     }
 })
+
 </script>
 
 <template>

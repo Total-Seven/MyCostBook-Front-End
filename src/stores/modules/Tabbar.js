@@ -36,14 +36,6 @@ const tabbar = {
             ],
         }
     ),
-    getters: {},
-    actions: {
-        // async fetchAllCitiesData() {
-        //     console.log('This is fetchAllCitiesData');
-        //     const res = await getCityAll()
-        //     this.allcities = res.data
-        // }
-    },
 }
 // 变成全局对象
 const useTabBarStore = defineStore('tabbar', tabbar)

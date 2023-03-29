@@ -11,7 +11,7 @@ const props = defineProps({
     current_index: {
         type: Number,
         default: 0
-    }
+    },
 })
 const emit = defineEmits(['update:current_option', 'edit:category'])
 

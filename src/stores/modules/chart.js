@@ -1,5 +1,6 @@
+import { computed } from 'vue'
+
 import { defineStore } from "pinia";
-import { toRaw } from "vue";
 
 import { exp_Exp_Inc_Trf } from "@/service/models/chart";
 
@@ -48,18 +49,14 @@ const store = {
     getters: {},
     actions: {
         async get_Exp_Data() {
-            console.group('Statistics,发送网络请求');
             const res = await exp_Exp_Inc_Trf()
-            console.log('...正在加载');
             if (res && res.code == 200) {
                 // console.log(year.data, month.data, week.data, day.data);
                 this.data = res.data
-                console.log('!!!,请求成功🔥');
-                console.groupEnd('Statistics,发送网络请求');
                 return true
             }
-            else if (res.code == 500) console.log('失败');
-            else console.log('请求失败');
+            else if (res.code == 500) { }
+            else { }
         }
     },
 

@@ -1,22 +1,24 @@
 <script setup>
-// vue--API
-import { ref } from 'vue';
 // highcharts
 import Highcahrts from 'highcharts'
 import Highcharts3d from 'highcharts/highcharts-3d'
+// import exportingInit from 'highcharts/modules/exporting'
+import accessibility from 'highcharts/modules/accessibility'
 // 组件
 import chartbanner from './cpns/chartbanner.vue'
-import pies from './cpns/pies.vue'
 import tabs from './cpns/tabs.vue';
 import date from './cpns/date.vue'
 import menus from './cpns/menus.vue';
 import lineChart from './cpns/lineChart.vue';
 import pieChart from './cpns/pieChart.vue'
 import top from './cpns/top.vue';
-// 
-
+//
+// exportingInit(Highcahrts)
 Highcharts3d(Highcahrts)
 Highcahrts.setOptions({
+    accessibility: {
+        enabled: false
+    },
     chart: {
         backgroundColor: {
             linearGradient: [0, 0, 500, 500],
@@ -42,13 +44,10 @@ Highcahrts.setOptions({
         <chartbanner />
         <tabs />
         <date />
-        <!-- <div class="content"> -->
         <lineChart />
         <menus />
         <pieChart />
         <top />
-        <!-- <pies /> -->
-        <!-- </div> -->
     </div>
 </template>
 
@@ -62,6 +61,5 @@ Highcahrts.setOptions({
     overflow-y: auto;
     background: linear-gradient(180.00deg, rgba(67, 136, 131, 0.3) -28%, rgba(67, 136, 131, 0) 97%);
     margin-bottom: 60px;
-    // padding-bottom: 60px;
 }
 </style>

@@ -2,7 +2,7 @@
 // Vue
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
 // Store
-import useLoginStore from '@/stores/modules/login'
+import useMainStore from '@/stores/modules/main';
 /**
 * var
 */
@@ -21,17 +21,13 @@ const router = useRouter()
 
 // 跳转至 分类详情
 function LinktoDetail(item) {
-    console.log('LinktoDetail', item);
-    console.warn(item.type_pieArr, item.type_topArr);
     router.push({
         path: `/categoryStatistics:${item.billLedger}`,
     })
 }
 
 onBeforeRouteLeave((to, from) => {
-    if (to.name == '统计分类') {
-        useLoginStore().isShowPlaneLoading = true
-    }
+    if (to.name == '统计分类') useMainStore().isShowPlaneLoading = true
 })
 
 </script>

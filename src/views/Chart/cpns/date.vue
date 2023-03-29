@@ -9,7 +9,6 @@ const { data, current_menu, current_tab, current_dateIndex } = storeToRefs(chart
 /**
  * 根据Year、Month、Week、Day决定（tab）
  */
-console.log(current_menu.value, ':', toRaw(data.value[current_menu.value]));
 const date_arr = computed(() => {
     return data.value[current_menu.value][current_tab.value].time  // 后端返回可选择的日期（用户有账单记录的）
 })

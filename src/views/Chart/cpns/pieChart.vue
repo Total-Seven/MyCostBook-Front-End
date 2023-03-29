@@ -1,13 +1,13 @@
 <script setup>
 // vue
-import { ref, reactive, computed, watch } from 'vue'
+import { computed } from 'vue'
 // 图表
 import Highcahrts from 'highcharts'
 // Store
 import useChartStore from '@/stores/modules/chart';
 import { storeToRefs } from 'pinia';
 const chartStore = useChartStore()
-const { menu, current_menu, tab, data, current_tab, current_dateIndex } = storeToRefs(chartStore)
+const { current_menu, data, current_tab, current_dateIndex } = storeToRefs(chartStore)
 
 const date_arr = computed(() => {
     return data.value[current_menu.value][current_tab.value].time  // 后端返回可选择的日期（用户有账单记录的）
@@ -26,6 +26,12 @@ const pie_array = computed(() => {
 
 //
 const chartOption2 = computed(() => ({
+    caption: {
+        // text: '<b>The caption renders in the bottom, and is part of the exported chart.</b>'
+    },
+    accessibility: {
+        enabled: false
+    },
     chart: {
         type: 'pie',
         options3d: {
@@ -91,36 +97,25 @@ const chartOption2 = computed(() => ({
     },
     series: [{
         name: '货物金额',
-        // data: [
-        //     ['个人', 8],
-        //     ['家庭', 3],
-        //     ['学校', 1],
-        //     ['情侣', 6],
-        //     ['旅游', 8],
-        //     ['宝宝', 4],
-        //     ['生意', 4],
-        //     ['装修', 1],
-        //     ['婚姻', 1]
-        // ],
         data: pie_array.value,
         hoverAnimation: true,
     }],
     events: {
-        load: function () {
-            var each = HighCharts.each,
-                points = this.series[0].points
-            each(points, function (p) {
-                p.graphic.attr({
-                    translateY: -p.shapeArgs.ran
-                })
-                p.graphic.side1.attr({
-                    translateY: -p.shapeArgs.ran
-                })
-                p.graphic.side2.attr({
-                    translateY: -p.shapeArgs.ran
-                })
-            })
-        }
+        // load: function () {
+        //     var each = HighCharts.each,
+        //         points = this.series[0].points
+        //     each(points, function (p) {
+        //         p.graphic.attr({
+        //             translateY: -p.shapeArgs.ran
+        //         })
+        //         p.graphic.side1.attr({
+        //             translateY: -p.shapeArgs.ran
+        //         })
+        //         p.graphic.side2.attr({
+        //             translateY: -p.shapeArgs.ran
+        //         })
+        //     })
+        // }
     },
     options3d: {
         enabled: true,
@@ -145,35 +140,15 @@ const chartOption2 = computed(() => ({
         }
     }
 }))
-
-Highcahrts.getOptions().colors = Highcahrts.map(Highcahrts.getOptions().colors, function (color) {
-    return {
-        radialGradient: { cx: 0.5, cy: 0.3, r: 0.7 },
-        stops: [
-            [0, color],
-            [1, Highcahrts.Color(color).brighten(-0.3).get('rgb')] // darken
-        ]
-    };
-});
-// 颜色
-const setcolor = () => {
-    console.log('setColor');
-    // 颜色的填充
-    let color1 = ['#0DEFED', '#0ECAF6', '#FF698F', '#A77BFF']
-    let color2 = ['#99FCFF', '#028EEF', '#F04864', '#854BF7']
-    Highcahrts.getOptions().colors = Highcahrts.map(
-        Highcahrts.getOptions().colors,
-        function (color, index) {
-            return {
-                radialGradient: { cx: 0.5, cy: 0.3, r: 0.7 },
-                stops: [
-                    [0, color1[index]],
-                    [1, color2[index]] // darken
-                ]
-            }
-        }
-    )
-};
+Highcahrts.getOptions().colors.map(color => ({
+    linearGradient: {
+        cx: 0.5, cy: 0.3, r: 0.7
+    },
+    stops: [
+        [0, color],
+        [1, Highcahrts.Color(color).brighten(-0.3).get('rgb')] // darken
+    ]
+}))
 </script>
 
 <template>

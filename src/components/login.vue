@@ -3,9 +3,6 @@
 import { ref } from 'vue';
 // 路由
 import { useRouter } from 'vue-router'
-// Store
-import useLoginStore from '@/stores/modules/login'
-import { storeToRefs } from 'pinia';
 // 组件
 import loading from './loading.vue';
 // Hook
@@ -13,12 +10,14 @@ import { createURLObj } from '@/utils/URLSearchParams';
 // Vant
 import { showFailToast } from 'vant';
 import 'vant/es/toast/style'
-// base64
+// base64 
 import { Base64 } from "js-base64";
 import docCookies from '@/utils/docCookies'
-
-const loginStore = useLoginStore()
-const { submit_login, token, isShowanimation } = storeToRefs(loginStore)
+// Store
+import { storeToRefs } from 'pinia';
+import useMainStore from '@/stores/modules/main';
+const mainStore = useMainStore()
+const { isShowPlaneLoading } = storeToRefs(mainStore)
 // 路由
 const router = useRouter()
 // 账户密码
@@ -54,35 +53,31 @@ const click = () => {
         }, 1000)
         return
     }
-    submit_login.value = createURLObj({ username: username.value, password: password.value })
+    const submit_login = createURLObj({ username: username.value, password: password.value })
     if (remember.value) {
         // 如果选择记住密码
         // 加密
         const pw = Base64.encode(password.value)
-        console.log('加密base码:xxxxxx',);
         // cookie
         docCookies.setItem('userName', username.value, Infinity,)
         docCookies.setItem('passWord', pw, Infinity,)
-        console.log('记住密码:', '账号是：', docCookies.getItem('userName'), '密码是：', Base64.decode(docCookies.getItem('passWord')));
     }
     else if (!remember.value) {
         docCookies.removeItem('userName')
         docCookies.removeItem('passWord')
     }
     // 发送请求
-    loginStore.PostLogin().then(res => {
+    mainStore.PostLogin(submit_login).then(res => {
         if (res.code == 200) {
             title.value = `Let's Go`
             setTimeout(() => {
-                console.log('1.登入,token已存入local',);
                 sessionStorage.setItem('token', res.data.token)  // 关闭窗口就失效，刷新页面不会
                 // 编程式导航
                 router.push('/home')    //这个方法会向 history 栈添加一个新的记录，所以，当用户点击浏览器后退按钮时，会回到之前的 URL。
-                isShowanimation.value = false   // 跳转后把动画取消，防止用户重新登入时动画依然存在
+                isShowPlaneLoading.value = false   // 跳转后把动画取消，防止用户重新登入时动画依然存在
             }, 1000)
         }
         else if (res.code == 500) {
-            console.log('返回500');
             text.value = res.msg    // 显示失败的原因
             setTimeout(() => {
                 text.value = '登入'
@@ -126,8 +121,8 @@ const showEyes = ref('password')
                     <input autocomplete="off" type="checkbox" v-model="remember">
                 </div>
                 <div class="signUp" @click="click">
-                    <span v-if="isShowanimation == false" v-html="text"></span>
-                    <div class="loading" v-if="isShowanimation == true">
+                    <span v-if="isShowPlaneLoading == false" v-html="text"></span>
+                    <div class="loading" v-if="isShowPlaneLoading == true">
                         <loading />
                     </div>
                 </div>
@@ -135,11 +130,11 @@ const showEyes = ref('password')
                     <div>Have Not Account? <span class="sign-up" @click="router.push('/')"> Sign up</span></div>
                 </div>
                 <!-- <div class="others">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <div class="box">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <img class="qq" src="@/assets/img/login/QQ.svg" alt="">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <img class="wechat" src="@/assets/img/login/wechat.svg" alt="">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </div> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <div class="box">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <img class="qq" src="@/assets/img/login/QQ.svg" alt="">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <img class="wechat" src="@/assets/img/login/wechat.svg" alt="">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div> -->
 
 
             </form>

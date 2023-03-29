@@ -5,10 +5,7 @@ import useTabBarStore from '@/stores/modules/Tabbar';
 import useChartStore from '@/stores/modules/chart';
 import usePlanStore from '@/stores/modules/plan';
 import useCenterStore from '@/stores/modules/center';
-import useLoginStore from '@/stores/modules/login';
 import useCostStore from '@/stores/modules/cost';
-// 日期
-import dayjs from 'dayjs'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -103,7 +100,6 @@ const router = createRouter({
       beforeEnter(to, from, next) {
         const costStore = useCostStore()
         const id = to.params.id.replace(':id', '')
-        console.log(id);
         costStore.get_detail(id)
         next()
       }
@@ -144,9 +140,6 @@ const router = createRouter({
       async beforeEnter(to, from, next) {
         const planStore = usePlanStore()
         await planStore.get_userBudget().then(res => {
-          console.log('!!!,请求成功🔥');
-          console.timeEnd('Fortune')
-          console.groupEnd('Fortune,发送网络请求');
         })
         next()
       }
@@ -275,9 +268,9 @@ router.beforeEach(async (to, from) => {
   else if (to.path == '/center') current_index.value = 3
 
   // 鉴权
-  if (to.path == '/register') { console.group('登录/注册页面'); }
+  if (to.path == '/register') { }
   else if (sessionStorage.token) {
-    console.warn('路由保安叔叔🧔：用户已登入,放行');
+    console.log('%c 路由保安叔叔🧔：用户已登入,放行', 'padding:4px;color:#333;background:pink');
   }
   else if (to.name !== '登入') {
     console.warn('这货还没登入，重定向至=>“登入页面”');

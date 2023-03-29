@@ -1,24 +1,16 @@
 <script setup>
-import { ref } from 'vue';
 // Store
 import useChartStore from '@/stores/modules/chart';
 import { storeToRefs } from 'pinia';
 const chartStore = useChartStore()
 const { menu, current_menu } = storeToRefs(chartStore)
-// 
-const ismenu = ref(false)
-
-const shift = (item, index) => {
-    current_menu.value = item
-    // console.log('这里是menus:', menu.value);
-}
 </script>
 
 <template>
     <div class="menus">
         <div class="menu">
             <template v-for="(item, index) in menu" :key="index">
-                <div class=" item " :class="{ active: current_menu == item }" @click="shift(item, index)"><span>{{ item
+                <div class=" item " :class="{ active: current_menu == item }" @click="current_menu = item"><span>{{ item
                 }}</span></div>
             </template>
         </div>

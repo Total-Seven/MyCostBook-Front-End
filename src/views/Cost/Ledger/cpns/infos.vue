@@ -1,23 +1,23 @@
 <script setup>
-defineProps({
-    total_infos: {
-        type: Object,
-        default: () => { }
-    }
-})
+// Store
+import { storeToRefs } from 'pinia';
+import useMainStore from '@/stores/modules/main';
+const mainStore = useMainStore()
+const { user } = storeToRefs(mainStore)
+
 </script>
 
 <template>
     <div class="infos">
         <div class="info surplus">
             <div>Surplus</div>
-            <span>￥{{ total_infos.surplus.net }}</span>
+            <span>￥{{ user.net }}</span>
         </div>
         <div class="info save"><span style="font-size: 16px;">SaveMoney</span><span style="font-weight: 600;">￥{{
-            total_infos.SaveMoney }}</span>
+            user.Saved_Money }}</span>
         </div>
         <div class="info budget"><span style="font-size: 16px;">Budget</span><span style="font-weight: 600;"> ￥{{
-            total_infos.budget }}</span></div>
+            user.userInfo?.current_budget }}</span></div>
     </div>
 </template>
 

@@ -164,7 +164,7 @@ export default function useTouch(targetElement, ideal_Mode) {
             targetDom.addEventListener('touchmove', handleTouchmove)
             targetDom.addEventListener('touchend', handleTouchend)
             // Red_Index.value.addEventListener('touchmove', handlerTouchMove, { passive: false })
-            console.log('监听成功！');
+            // console.log('监听成功！');
         }
 
         //Ideal
@@ -176,7 +176,7 @@ export default function useTouch(targetElement, ideal_Mode) {
 
     onUnmounted(() => {
         targetDom.removeEventListener('touchstart', handleTouchstart)
-        console.log('移除监听！')
+        // console.log('移除监听！')
     })
     return { start_y, moveX, moveY }
 }

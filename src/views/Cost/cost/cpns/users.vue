@@ -1,11 +1,11 @@
 <script setup>
-import { storeToRefs } from 'pinia';
+// Vue
 import { ref } from 'vue';
-// 
+// Store
+import { storeToRefs } from 'pinia';
 import useCostStore from '@/stores/modules/cost';
 const costStore = useCostStore()
 const { isHiddenUser } = storeToRefs(costStore)
-
 
 const avalist = [
     { ava: '1.svg' },
@@ -14,10 +14,15 @@ const avalist = [
     { ava: '4.svg' },
     { ava: '5.svg' },
 ]
-function getUrl(img) {
-    return new URL(`../../../../assets/img/cost/list/avatar/${img}`, import.meta.url).href
+// function getUrl(img) {
+//     return new URL(`../../../../assets/img/cost/list/avatar/${img}`, import.meta.url).href
+// }
+function getUrl(baseUrl) {
+    return (img) => {
+        return new URL(`${baseUrl}/${img}`, import.meta.url).href
+    }
 }
-
+const getImg = getUrl('../../../../assets/img/cost/list/avatar')
 
 const close = () => {
     isHiddenUser.value = true
@@ -33,7 +38,7 @@ const close = () => {
         <div class="list">
             <template v-for="(item, index) in avalist" :key="index">
                 <div class="item">
-                    <img :src="getUrl(item.ava)" alt="">
+                    <img :src="getImg(item.ava)" alt="">
                 </div>
             </template>
         </div>

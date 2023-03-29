@@ -5,80 +5,56 @@ import { createURLObj } from '@/utils/URLSearchParams';
 // 路由
 import { useRouter } from 'vue-router';
 // Store
-import useRegisterStore from '@/stores/modules/register'
 import { storeToRefs } from 'pinia';
-const registerStore = useRegisterStore()
-const { submit_register, isShowanimation, token, default_book_id } = storeToRefs(registerStore)
+import useMainStore from '@/stores/modules/main';
+const mainStore = useMainStore()
+const { user, isShowPlaneLoading } = storeToRefs(mainStore)
 // 路由
 const router = useRouter()
-
-// function examine(...rest) {
-//     const keys = Object.keys(...rest)
-//     const values = Object.values(...rest)
-//     const params = new URLSearchParams()
-//     for (let i = 0; i < keys.length; i++) {
-//         params.append(keys[i], values[i])
-//     }
-//     return params
-// }
-// test(1, 2)
-// const paramss = examine({ username: 'link', password: 123 })
-// console.log(paramss);
-
-
 /**
  * 转场动画
  */
-const Ref_regis = ref()
-const start_animition = ref(false)
-const showRegisterWindow = ref(false)
-
-const start_register = () => {
-    const promise = new Promise((resolve, rejecr) => {
-        start_animition.value = true
-        setTimeout(() => {
-            Ref_regis.value.style.cssText = `display:none`
-            Ref_pic.value.style.display = 'block'
-        }, 475)
-        // Ref_regis.value.classList.add(out)
-        setTimeout(() => {
-            showRegisterWindow.value = true
-            // resolve()
-        }, 495)
-    })
-    return promise
-}
-
 const Ref_page = ref()
 const Ref_pic = ref()
+const Ref_regis = ref()
 const title = ref('注册')
 const zhuce = ref('注册')
+const start_animition = ref(false)
+const showRegisterWindow = ref(false)
+const formdata = ref({
+    username: undefined,
+    password: undefined,
+    bookname: undefined,
+})
 
-//
-const username = ref()
-const password = ref()
-const bookname = ref()
+function startRegister() {
+    start_animition.value = true
+    setTimeout(() => {
+        Ref_regis.value.style.cssText = `display:none`
+        Ref_pic.value.style.display = 'block'
+    }, 475)
+    setTimeout(() => {
+        showRegisterWindow.value = true
+    }, 495)
+}
 
-/**
- * 网络请求
- */
-const click = () => {
+function click() {
+    console.warn(formdata.value.username, formdata.value.password);
     // 获取数据
-    if (!username.value || !password.value) {
-        title.value = '用户名和密码非空！'
+    if (!formdata.value.username || !formdata.value.password) {
+        title.value = '用户名和密码不能为空哦!'
         setTimeout(() => {
             title.value = '注册'
         }, 1000)
         return
     }
     else {
-        submit_register.value = createURLObj({ username: username.value, password: password.value, bookname: bookname.value })
-        registerStore.PostRegister()
-            .then(res => {
+        const submit_register = createURLObj(formdata.value)
+        mainStore.PostRegister(submit_register)
+            .then(token => {
                 zhuce.value = `Let's Go`
                 router.push('/home')
-                console.log('0.注册:', default_book_id.value, token.value);
-                sessionStorage.setItem('token', token.value)
+                sessionStorage.setItem('token', token)
             })
             .catch(res => {
                 title.value = res.msg
@@ -97,53 +73,63 @@ const click = () => {
 <template>
     <div class="register" ref="Ref_page" :class="{ bgActive: showRegisterWindow == true }">
         <div class="inner">
+            <!-- Form 注册页 -->
             <div class="pic" ref="Ref_pic">
+                <!-- 图片 -->
                 <img src="@/assets/img/register/topperson.svg" alt="">
                 <div class="title">
                     <h1 v-html="zhuce"></h1>
                 </div>
+                <!-- Form -->
                 <form class="form">
+                    <!-- 用户名 -->
                     <div class="username glass">
                         <div class="icon"><img class="little" src="@/assets/img/register/user.svg" alt=""></div>
-                        <div class="text"><input v-model="username" type="text" placeholder="用户名" name="name" id="name"
-                                onfocus="if(this.value=='用户名'){this.value='';}" required autofocus>
+                        <div class="text"><input v-model="formdata.username" type="text" placeholder="用户名" name="name"
+                                id="name" onfocus="if(this.value=='用户名'){this.value='';}" required autofocus>
                         </div>
                     </div>
+                    <!-- 密码 -->
                     <div class="password glass">
                         <div class="icon"><img class="little" src="@/assets/img/register/password.svg" alt=""></div>
-                        <div class="text"><input v-model="password" type="text" placeholder="密码" name="name" id="name"
-                                onfocus="if(this.value=='密码'){this.value='';}" required autofocus></div>
+                        <div class="text"><input v-model="formdata.password" type="text" placeholder="密码" name="name"
+                                id="name" onfocus="if(this.value=='密码'){this.value='';}" required autofocus></div>
                     </div>
+                    <!-- 账本 -->
                     <div class="ledger glass">
                         <div class="icon"><img class="little" src="@/assets/img/register/book.svg" alt=""></div>
-                        <div class="text"><input v-model="bookname" type="text" placeholder="默认账本名" name="name" id="name"
-                                onfocus="if(this.value=='默认账本名'){this.value='';}" required autofocus></div>
+                        <div class="text"><input v-model="formdata.bookname" type="text" placeholder="默认账本名" name="name"
+                                id="name" onfocus="if(this.value=='默认账本名'){this.value='';}" required autofocus></div>
                     </div>
+                    <!-- 按钮 -->
                     <div class="signUp galss" @click="click">
                         <span v-html="title"></span>
                     </div>
-
+                    <!-- 其他注册方式 -->
                     <div class="others">
                         <div class="box">
                             <div class="qq item"><img class="little" src="@/assets/img/register/qie.svg" alt=""></div>
                             <div class="wechat item"><img class="little" src="@/assets/img/register/wexin.svg" alt=""></div>
                         </div>
                     </div>
+                    <!-- 跳转到登录页面 -->
                     <div class="tip">
                         <div>Already Have Account? <span @click="router.push('/login')"> Sign in</span></div>
                     </div>
                 </form>
 
             </div>
-            <div class="regis" :class="{ out: start_animition == true }" ref="Ref_regis">
+            <!-- 初始页面 -->
+            <div class="regis" :class="{ 'animation-out': start_animition == true }" ref="Ref_regis">
                 <div class="text">
                     <span class="slogan">Spend Smarter Save More</span>
                 </div>
                 <img src='@/assets/img/register/registerButton.png' alt="" @click="$router.push('/login')">
                 <div class="tip">
-                    <div>Have Not Account? <span @click="start_register().then(() => { })"> Sign up</span></div>
+                    <div>Have Not Account? <span @click="startRegister"> Sign up</span></div>
                 </div>
             </div>
+            <!-- 灯光效果 -->
             <div class="halo" v-if="showRegisterWindow == true">
                 <img class="blur" src="@/assets/img/register/blur.svg" alt="">
             </div>
@@ -181,7 +167,7 @@ const click = () => {
     }
 }
 
-.out {
+.animation-out {
     animation-name: puff-out-center;
     animation-duration: 0.5s;
     animation-timing-function: linear;

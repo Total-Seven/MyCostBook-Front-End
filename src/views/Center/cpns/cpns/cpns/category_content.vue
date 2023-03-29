@@ -12,7 +12,6 @@ import 'vant/es/notify/style'
 import useCenterStore from '@/stores/modules/center';
 import { storeToRefs } from 'pinia';
 const centerStore = useCenterStore()
-const { isClicktoEdit, add_category_info, delete_category_info } = storeToRefs(centerStore)
 // Emit
 const emit = defineEmits(['notify:itenAmount'])
 // Props
@@ -24,6 +23,10 @@ const props = defineProps({
     current_index: {
         type: Number,
         default: 0
+    },
+    isClicktoEdit: {
+        type: Boolean,
+        default: false
     }
 })
 props.types[0].hide = false // 默认第一项是展开的
@@ -63,7 +66,7 @@ const first_type_id = ref() // 一级分类的名字
 const subMit_name = ref()      // 表单提交的name
 let closeFn = (status, firstType_index, category_id, newValue) => { }
 const clickIten = (item, iten, index, indey, $event) => {
-    if (!isClicktoEdit.value) {
+    if (!props.isClicktoEdit) {
         if ($event.target.innerText == '+') {
             // 弹出popUp
             showPopUpBottom.value = true
@@ -118,20 +121,23 @@ const submit = () => {
         }, 1000)
         return
     }
-    add_category_info.value = createURLObj({ name: subMit_name.value, type_id: type.value, avator: '' })
-    centerStore.Post_addCategory(first_type_id.value, type_name.value)
-    showPopUpBottom.value = false
+    const add_category_info = createURLObj({ name: subMit_name.value, type_id: type.value, avator: '' })
+    centerStore.Post_addCategory(add_category_info, first_type_id.value, type_name.value)
+        .then(() => {
+            showPopUpBottom.value = false
+            showNotify({ type: 'success', message: '添加分类成功' });
+        })
 }
-
-
 
 /**
  * 删除类别
  */
 const isInputShark = ref(false)
 const del_category = (iten, item) => {
-    delete_category_info.value = createURLObj({ id: iten.id })
-    centerStore.Post_deleteCategory(iten.id, item.id)
+    const delete_category_info = createURLObj({ id: iten.id })
+    centerStore.Post_deleteCategory(delete_category_info, iten.id, item.id).then(() => {
+        showNotify({ type: 'success', message: '删除成功' });
+    })
 }
 
 </script>
@@ -141,7 +147,7 @@ const del_category = (iten, item) => {
         <div class="innerItem">
             <template v-for="(item, index) in types" :key="index">
                 <div class="item">
-                    <div class="title" v-Trriger @click="click($event, item, index, hide)" :hide="item.hide">
+                    <div class="title" @click="click($event, item, index, hide)" :hide="item.hide">
                         <div class="left">
                             <div><img src="https://s2.loli.net/2023/02/10/cZkBewG65J3SjHr.png" alt=""
                                     :class="{ imgshark: isClicktoEdit && item.hide == false }">
@@ -189,11 +195,11 @@ const del_category = (iten, item) => {
                             </div>
                         </div>
                     </div>
-                    <div class=" box name">
+                    <div class="box name">
                         <input :class="{ inputShark: isInputShark }" type="text" v-model="subMit_name"
                             placeholder="&ensp; Please enter a category name">
                     </div>
-                    <div class=" box submit">
+                    <div class="box submit">
                         <div class="btn" @click="submit">
                             <van-icon name="success" size="36" />
                         </div>

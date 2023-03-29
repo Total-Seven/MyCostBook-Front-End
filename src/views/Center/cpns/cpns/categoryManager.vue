@@ -11,32 +11,33 @@ import { Myfor } from '@/utils'
 import { storeToRefs } from 'pinia';
 import useCenterStore from '@/stores/modules/center';
 const centerStore = useCenterStore()
-const { isClicktoEdit, current_option, enterCategoryManner_count } = storeToRefs(centerStore)
+const { enterCategoryManner_count } = storeToRefs(centerStore)
 
+const isClicktoEdit = ref(false)
 const props = defineProps({
-    test: {
+    data: {
         type: Object,
         default: () => { }
     }
 })
-
-/* 改变props */
-const types = computed(() => {
-    if (typeof props.test == 'undefined') return       // 卸载时也会计算 ，需要返回
-    else return props.test[current_option.value]
-})
 /**当前选项 Income or Expense */
 const current_index = ref(0)
-/**提取出options */
+const current_option = ref('Expend')
+/* 分 Expend 和 Income */
+const types = computed(() => {
+    if (typeof props.data == 'undefined') return       // 卸载时也会计算 ，需要返回
+    else return props.data[current_option.value]
+})
+/**提取出一级分类 */
 const options_keys = computed(() => {
-    if (typeof props.test == 'undefined') return       // 卸载时也会计算 ，需要返回
-    else return Object.keys(props.test)
+    if (typeof props.data == 'undefined') return       // 卸载时也会计算 ，需要返回
+    else return Object.keys(props.data)
 })
 
 
 // 新增一个属性控制显示隐藏
 function addProperty() {
-    if (props.test['Expend'][0].list.at(-1).name == '+') return
+    if (props.data['Expend'][0].list.at(-1).name == '+') return
     if (enterCategoryManner_count.value === 0) {
         const for_cb = (element) => {
             element.hide = true
@@ -50,8 +51,8 @@ function addProperty() {
         const insert_Last_Button = (arr) => {
             Myfor(arr, for_cb)
         }
-        insert_Last_Button(props.test['Expend'])
-        insert_Last_Button(props.test['Income'])
+        insert_Last_Button(props.data['Expend'])
+        insert_Last_Button(props.data['Income'])
         enterCategoryManner_count.value++
     }
 }
@@ -62,17 +63,21 @@ onBeforeUnmount(() => {
     enterCategoryManner_count.value = 0
 })
 
+
+
+/**
+ * 子组件的属性和事件👇
+ */
+const text_title = ref('Categories')
 /**监听子组件 -- 更新 option */
 function update_current_option(index, key) {
     current_index.value = index
     current_option.value = key
 }
-
 /**开启编辑状态 -- 可删除类别 */
 function edit_category() {
     isClicktoEdit.value == true ? isClicktoEdit.value = false : isClicktoEdit.value = true
 }
-const text_title = ref('Categories')
 /**点击iten 查看消费金额 */
 function notify(params) {
     text_title.value = params
@@ -89,7 +94,8 @@ function notify(params) {
         </div>
         <options @edit:category="edit_category" @update:current_option="update_current_option"
             :current_index="current_index" :options="options_keys" />
-        <categoryContent @notify:itenAmount="notify" :types="types" :current_index="current_index" class="content" />
+        <categoryContent :isClicktoEdit="isClicktoEdit" @notify:itenAmount="notify" :types="types"
+            :current_index="current_index" class="content" />
     </div>
 </template>
 

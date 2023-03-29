@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 // Vue
 import { ref, reactive, computed, watch, onMounted, onUpdated, toRaw, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
@@ -54,8 +54,11 @@ function change() {
     value.value = undefined
 }
 
+const x = ref(0)
 
-
+function onMousemove(e) {
+    x.value = e.clientX
+}
 </script>
 
 <template>
@@ -72,13 +75,18 @@ function change() {
                 </div>
             </template>
         </div>
-        <input v-model="value" @change="change" type="text">
+        <input @mousemove="onMousemove" :style="{ backgroundColor: `hsl(${x}, 80%, 50%)` }" class="movearea" v-model="value"
+            @change="change" type="text">
         <button @click="socket.disconnect();">断开连接</button>
         <button @click="router.back();">返回</button>
     </div>
 </template>
 
 <style lang="less" scoped>
+.movearea {
+    transition: 0.3s background-color ease;
+}
+
 .webSocket {
     display: grid;
     width: 100%;
@@ -108,4 +116,4 @@ button {
         overflow-y: auto;
     }
 }
-</style>
+</style> -->

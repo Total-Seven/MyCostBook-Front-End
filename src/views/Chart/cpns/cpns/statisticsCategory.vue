@@ -10,17 +10,15 @@ import Top from './cpns/detailTop.vue'
 /**
  * Store
  */
-// Login
-import useLoginStore from '@/stores/modules/login'
-// Chart
-import useChartStore from '@/stores/modules/chart';
-import { storeToRefs } from 'pinia';
+import { storeToRefs } from 'pinia'
+import useMainStore from '@/stores/modules/main'
+import useChartStore from '@/stores/modules/chart'
 const chartStore = useChartStore()
 const { data, current_menu, current_tab, current_dateIndex } = storeToRefs(chartStore)
 
 // 取消动画
 onBeforeMount(() => {
-    useLoginStore().isShowPlaneLoading = false
+    useMainStore().isShowPlaneLoading = false
 })
 /**
 * var
@@ -54,7 +52,6 @@ const route = useRoute()
 * function
 */
 function updateOption(newV) {
-    console.log(`%c ${newV}`, 'color:#333;font-weight:800;background:pink');
     if (newV == 'Categories') {
         current_option.value = 'Categories'
     }

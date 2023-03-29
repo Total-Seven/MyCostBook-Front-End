@@ -17,11 +17,12 @@ import dayjs from 'dayjs'
 import { useRoute } from 'vue-router'
 // Store
 import { storeToRefs } from 'pinia'
+import useMainStore from '@/stores/modules/main'
 import useCenterStore from '@/stores/modules/center';
 import useCostStore from '@/stores/modules/cost'
-import useLoginStore from '@/stores/modules/login'
 // Store - - Login
-const loginStore = useLoginStore()
+const mainStore = useMainStore()
+const { user } = storeToRefs(mainStore)
 // Store - - Center
 const centerStore = useCenterStore()
 const { add_category_info } = storeToRefs(centerStore)
@@ -225,6 +226,8 @@ function Submit(params) {
                     obj.value.total_expense += keepTwoDecimalStr(amount_value.value)    //修改总金额
                 }
                 setTimeout(() => { showNotify({ type: 'success', message: '添加账单成功' }); }, 500);
+                // 修改预算
+                user.value.userInfo.currentBudget = user.value.userInfo.currentBudget - amount_value.value
             }
             else if (target_objIndex == -1) {
                 // 找不到即找位置插入
@@ -244,6 +247,8 @@ function Submit(params) {
                     obj.value.total_expense += keepTwoDecimalStr(amount_value.value)    //修改总金额
                 }
                 setTimeout(() => { showNotify({ type: 'success', message: '添加账单成功' }); }, 500);
+                // 修改预算
+                user.value.userInfo.currentBudget = user.value.userInfo.currentBudget - amount_value.value
             }
         });
         /**
@@ -304,38 +309,38 @@ function Close_dialog(action) {
         // undefined 
         add_category_info.value = createURLObj({ name: dialog_input, type_id: first_type_id, avator: '' })
         // 
-        centerStore.Post_addCategory(first_type_id, active.value == 'Expense' ? 'Expend' : 'Income',true)
+        centerStore.Post_addCategory(first_type_id, active.value == 'Expense' ? 'Expend' : 'Income', true)
             .then((id) => {
-            // 页面中修改View
-            console.warn(id);
-        if (typeof items.value[activeIndex.value].children == 'undefined') {
-            console.log('该二级分类为空！');
-            items.value[activeIndex.value].children = []
-            items.value[activeIndex.value].children.push({
-                id:id,
-                name: dialog_input,
-                text: dialog_input,
-                type_id: first_type_id,
-                avatar: ''
+                // 页面中修改View
+                console.warn(id);
+                if (typeof items.value[activeIndex.value].children == 'undefined') {
+                    console.log('该二级分类为空！');
+                    items.value[activeIndex.value].children = []
+                    items.value[activeIndex.value].children.push({
+                        id: id,
+                        name: dialog_input,
+                        text: dialog_input,
+                        type_id: first_type_id,
+                        avatar: ''
+                    })
+                }
+                else {
+                    items.value[activeIndex.value].children.push({
+                        id: id,
+                        text: dialog_input,
+                        name: dialog_input,
+                        type_id: first_type_id,
+                        avatar: ''
+                    })
+                }
+                // 成功提示
+                showNotify({ type: 'success', message: '添加类别成功' });
+                showDialog.value = false
             })
-        }
-        else {
-            items.value[activeIndex.value].children.push({
-                id:id,
-                text: dialog_input,
-                name: dialog_input,
-                type_id: first_type_id,
-                avatar: ''
-            })
-        }
-        // 成功提示
-        showNotify({ type: 'success', message: '添加类别成功' });
-        showDialog.value = false
-        })
         // 
         // console.warn(toRaw(items.value[activeIndex.value]));
         // console.warn(toRaw(items.value[activeIndex.value].children));
-        
+
     }
 }
 
